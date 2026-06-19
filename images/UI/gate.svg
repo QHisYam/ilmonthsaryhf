@@ -1,0 +1,16 @@
+<svg width="784" height="101" viewBox="0 0 784 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect y="14" width="784" height="10" fill="#1C161C"/>
+<rect y="45" width="784" height="10" fill="#1C161C"/>
+<rect x="18" width="101" height="10" transform="rotate(90 18 0)" fill="#1C161C"/>
+<rect x="258" width="101" height="10" transform="rotate(90 258 0)" fill="#1C161C"/>
+<rect x="498" width="101" height="10" transform="rotate(90 498 0)" fill="#1C161C"/>
+<rect x="68" y="101" width="101" height="10" transform="rotate(-90 68 101)" fill="#1C161C"/>
+<rect x="308" y="101" width="101" height="10" transform="rotate(-90 308 101)" fill="#1C161C"/>
+<rect x="548" y="101" width="101" height="10" transform="rotate(-90 548 101)" fill="#1C161C"/>
+<rect x="138" width="101" height="10" transform="rotate(90 138 0)" fill="#1C161C"/>
+<rect x="378" width="101" height="10" transform="rotate(90 378 0)" fill="#1C161C"/>
+<rect x="618" width="101" height="10" transform="rotate(90 618 0)" fill="#1C161C"/>
+<rect x="188" y="101" width="101" height="10" transform="rotate(-90 188 101)" fill="#1C161C"/>
+<rect x="428" y="101" width="101" height="10" transform="rotate(-90 428 101)" fill="#1C161C"/>
+<rect x="668" y="101" width="101" height="10" transform="rotate(-90 668 101)" fill="#1C161C"/>
+</svg>

@@ -45,6 +45,8 @@ html.viewport-locked #garden,
 html.viewport-locked #letterIntro,
 html.viewport-locked #letterCardFlowers,
 html.viewport-locked #memoryGallery,
+html.viewport-locked #favoritesStage,
+html.viewport-locked #finaleStage,
 html.viewport-locked .love-letter-stage{
     position:fixed;
     top:0;
@@ -81,6 +83,8 @@ body.scene-pannable #garden,
 body.scene-pannable #letterIntro,
 body.scene-pannable #letterCardFlowers,
 body.scene-pannable #memoryGallery,
+body.scene-pannable #favoritesStage,
+body.scene-pannable #finaleStage,
 body.scene-pannable .love-letter-stage{
     transform:scale(var(--scene-zoom, 1))
         translateX(calc(var(--scene-pan-x, 0px) / var(--scene-zoom, 1)));
@@ -642,6 +646,149 @@ body.scene-pannable .love-letter-stage{
     overflow:hidden;
 }
 
+#favoritesStage{
+    position:fixed;
+    top:0;
+    left:0;
+    z-index:1;
+    width:var(--world-w, 100vw);
+    height:var(--app-h, 100vh);
+    pointer-events:none;
+    overflow:hidden;
+}
+
+.favorites-stage-panel{
+    position:absolute;
+    top:0;
+    left:calc(var(--app-w) + var(--gallery-w, 0px) + var(--favorites-gap, 0px));
+    width:var(--favorites-w, var(--app-w));
+    height:100%;
+    box-sizing:border-box;
+}
+
+#finaleStage{
+    position:fixed;
+    top:0;
+    left:0;
+    z-index:1;
+    width:var(--world-w, 100vw);
+    height:var(--app-h, 100vh);
+    pointer-events:none;
+    overflow:visible;
+}
+
+.finale-stage-panel{
+    position:absolute;
+    top:0;
+    left:calc(
+        var(--app-w) + var(--gallery-w, 0px) + var(--favorites-gap, 0px) +
+        var(--favorites-w, 0px) + var(--finale-gap, 0px)
+    );
+    width:var(--finale-w, var(--app-w));
+    height:100%;
+    box-sizing:border-box;
+}
+
+.finale-garden{
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    overflow:visible;
+    pointer-events:none;
+}
+
+.finale-garden-back{
+    z-index:0;
+}
+
+.finale-garden-front{
+    z-index:2;
+}
+
+.finale-house{
+    position:absolute;
+    bottom:0;
+    left:50%;
+    z-index:1;
+    transform:translateX(calc(-50% + 150px)) translateY(10px);
+    width:min(calc(var(--app-w, 100vw) * 2.3), 1600px);
+    height:auto;
+    display:block;
+    pointer-events:none;
+    object-fit:contain;
+    object-position:center bottom;
+}
+
+.finale-gates{
+    position:absolute;
+    bottom:0;
+    left:50%;
+    z-index:3;
+    transform:translateX(calc(-50% + 48px));
+    display:flex;
+    align-items:flex-end;
+    justify-content:flex-start;
+    width:min(calc(var(--app-w, 100vw) * 3.6), 2820px);
+    pointer-events:none;
+}
+
+.finale-gate{
+    flex:0 0 33.333%;
+    width:33.333%;
+    height:auto;
+    display:block;
+    pointer-events:none;
+    object-fit:contain;
+    object-position:left bottom;
+}
+
+.finale-gate:not(:last-child){
+    transform:translateX(72px);
+}
+
+.favorites-arc-ring{
+    position:absolute;
+    bottom:0;
+    left:50%;
+    transform:translateX(-50%);
+    width:min(186%, 1900px);
+    height:min(76vh, 640px);
+    overflow:visible;
+    pointer-events:none;
+}
+
+.favorites-arc-ring-spin{
+    transform-origin:0 0;
+    animation:favorites-arc-spin 72s linear infinite;
+}
+
+.favorites-arc-ring circle{
+    fill:none;
+    stroke:rgba(255, 198, 236, 0.68);
+    stroke-width:1.75;
+    stroke-linecap:round;
+    stroke-dasharray:14 22;
+    filter:
+        drop-shadow(0 0 10px rgba(255, 155, 220, 0.42))
+        drop-shadow(0 0 24px rgba(255, 120, 210, 0.22));
+}
+
+.favorites-arc-photos{
+    pointer-events:none;
+}
+
+.favorites-arc-photo-image{
+    pointer-events:none;
+}
+
+@keyframes favorites-arc-spin{
+    to{
+        transform:rotate(360deg);
+    }
+}
+
 .memory-gallery-inner{
     position:absolute;
     top:0;
@@ -655,7 +802,7 @@ body.scene-pannable .love-letter-stage{
     overflow:hidden;
 }
 
-.memory-gallery-title{
+.pan-section-title{
     position:absolute;
     top:28px;
     left:calc(var(--app-w) / 2 - var(--scene-pan-x, 0px));
@@ -684,9 +831,19 @@ body.scene-pannable .love-letter-stage{
     transition:opacity 0.35s ease, visibility 0.35s ease;
 }
 
-#memoryGallery.is-active .memory-gallery-title{
+#memoryGallery.is-active .pan-section-title,
+#favoritesStage.is-active .pan-section-title,
+#finaleStage.is-active .pan-section-title{
     opacity:1;
     visibility:visible;
+}
+
+.pan-section-title--finale{
+    white-space:normal;
+    display:flex;
+    flex-direction:column;
+    gap:0.12em;
+    line-height:1.18;
 }
 
 .memory-card{
@@ -1231,6 +1388,37 @@ body.scene-pannable .love-letter-stage{
 
 <div id="memoryGallery" class="memory-gallery" aria-hidden="true"></div>
 
+<div id="favoritesStage" class="favorites-stage" aria-hidden="true">
+    <h2 class="pan-section-title">10 FAVORITE MOMENTS WITH YOU</h2>
+    <div class="favorites-stage-panel" aria-hidden="true">
+        <svg class="favorites-arc-ring" viewBox="0 0 1000 640" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
+            <g class="favorites-arc-root" transform="translate(500 1340)">
+                <g class="favorites-arc-ring-spin">
+                    <circle cx="0" cy="0" r="800" />
+                    <g class="favorites-arc-photos"></g>
+                </g>
+            </g>
+        </svg>
+    </div>
+</div>
+
+<div id="finaleStage" class="finale-stage" aria-hidden="true">
+    <h2 class="pan-section-title pan-section-title--finale">
+        <span>I love loving you.</span>
+        <span>I love you princess</span>
+    </h2>
+    <div class="finale-stage-panel" aria-hidden="true">
+        <svg id="finaleGardenBack" class="finale-garden finale-garden-back" aria-hidden="true"></svg>
+        <img class="finale-house" src="images/UI/house.svg" alt="" aria-hidden="true" />
+        <svg id="finaleGardenFront" class="finale-garden finale-garden-front" aria-hidden="true"></svg>
+        <div class="finale-gates" aria-hidden="true">
+            <img class="finale-gate" src="images/UI/gate.svg" alt="" aria-hidden="true" />
+            <img class="finale-gate" src="images/UI/gate.svg" alt="" aria-hidden="true" />
+            <img class="finale-gate" src="images/UI/gate.svg" alt="" aria-hidden="true" />
+        </div>
+    </div>
+</div>
+
 <div class="music-bar" id="musicBar" aria-label="Music player"></div>
 
 <script src="gallery-locked-layout.js"></script>
@@ -1303,6 +1491,17 @@ GALLERY_CAPTIONS[54] = "Your way of thinking";
 const GALLERY_CAPTION_STORAGE_KEY = "ilmonthsary.galleryCaptions";
 const GALLERY_CAPTIONS_EDITABLE = false;
 // TODO: remove temp gallery pan when the gallery section is finished
+const FAVORITES_SECTION_SCREENS = 1;
+const FAVORITES_SECTION_GAP_SCREENS = 0.25;
+const FINALE_SECTION_SCREENS = 1;
+const FINALE_SECTION_OVERFLOW_SCREENS = 1.45;
+const FINALE_SECTION_GAP_SCREENS = 0.25;
+const FAVORITES_ARC_PHOTO_COUNT = 8;
+const FAVORITES_ARC_CENTER_X = 500;
+const FAVORITES_ARC_CENTER_Y = 1340;
+const FAVORITES_ARC_RADIUS = 800;
+const FAVORITES_ARC_PHOTO_H = 780;
+const FAVORITES_ARC_PHOTO_W = 236;
 const GALLERY_TOP_SPACE = 88;
 const GALLERY_GAP = 15;
 const GALLERY_SIZE_SCALE = 1;
@@ -1319,7 +1518,7 @@ const GALLERY_REMOVED_GLASS_LABELS = new Set([
     "E",
     "O",
 ]);
-const GALLERY_FILLER_ART_DIR = "images";
+const GALLERY_FILLER_ART_DIR = "images/filler";
 const GALLERY_MANUAL_GLASS_GAPS = [
     [29, 5],
     [30, 12],
@@ -2810,26 +3009,7 @@ function remeasureGalleryWidth() {
         measuredGalleryWidth = inner.offsetWidth;
     }
 
-    const worldW = getAppViewport().width + measuredGalleryWidth;
-    const root = document.documentElement;
-    root.style.setProperty("--gallery-w", `${measuredGalleryWidth}px`);
-    root.style.setProperty("--world-w", `${worldW}px`);
-
-    const { height } = getAppViewport();
-    [
-        document.getElementById("garden"),
-        document.getElementById("letterIntro"),
-        document.getElementById("letterCardFlowers"),
-    ].forEach((layer) => {
-        if (!layer) return;
-        layer.setAttribute("width", String(worldW));
-        layer.setAttribute("height", String(height));
-        layer.setAttribute("viewBox", `0 0 ${worldW} ${height}`);
-    });
-
-    if (typeof setScenePanX === "function" && typeof scenePanX === "number") {
-        setScenePanX(scenePanX);
-    }
+    applyWorldDimensions();
 }
 
 function scheduleGalleryRelayout() {
@@ -2893,12 +3073,184 @@ function bindMemoryCardImage(card, img, photoWrap) {
     }
 }
 
+function getFavoritesGap() {
+    return getAppViewport().width * FAVORITES_SECTION_GAP_SCREENS;
+}
+
+function getFavoritesWidth() {
+    return getAppViewport().width * FAVORITES_SECTION_SCREENS;
+}
+
+function getFinaleGap() {
+    return getAppViewport().width * FINALE_SECTION_GAP_SCREENS;
+}
+
+function getFinaleWidth() {
+    const appW = getAppViewport().width;
+    return appW * (FINALE_SECTION_SCREENS + FINALE_SECTION_OVERFLOW_SCREENS);
+}
+
+function getPanScrollWidth() {
+    return (
+        getGalleryWidth() +
+        getFavoritesGap() +
+        getFavoritesWidth() +
+        getFinaleGap() +
+        getFinaleWidth()
+    );
+}
+
 function getScenePanMax() {
-    return getGalleryWidth();
+    return getPanScrollWidth();
 }
 
 function getWorldWidth() {
-    return getAppViewport().width + getGalleryWidth();
+    return getAppViewport().width + getPanScrollWidth();
+}
+
+function getFinalePanelLeft() {
+    return (
+        getAppViewport().width +
+        getGalleryWidth() +
+        getFavoritesGap() +
+        getFavoritesWidth() +
+        getFinaleGap()
+    );
+}
+
+function isPointInFinaleSection(layoutX) {
+    const start = getFinalePanelLeft();
+    return layoutX >= start && layoutX < start + getFinaleWidth();
+}
+
+function getFinalePlantLayer(clientY) {
+    const house = document.querySelector(".finale-house");
+    const houseRect = house?.getBoundingClientRect();
+    return houseRect && clientY < houseRect.top ? "back" : "front";
+}
+
+function getFinaleGardenSvg(layer) {
+    return document.getElementById(
+        layer === "back" ? "finaleGardenBack" : "finaleGardenFront"
+    );
+}
+
+function syncFinaleGardenSvgs() {
+    const { width, height } = getAppViewport();
+
+    ["finaleGardenBack", "finaleGardenFront"].forEach((id) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.setAttribute("width", String(width));
+        el.setAttribute("height", String(height));
+        el.setAttribute("viewBox", `0 0 ${width} ${height}`);
+    });
+}
+
+function applyWorldDimensions() {
+    const galleryW = getGalleryWidth();
+    const favoritesGap = getFavoritesGap();
+    const favoritesW = getFavoritesWidth();
+    const finaleGap = getFinaleGap();
+    const finaleW = getFinaleWidth();
+    const worldW = getWorldWidth();
+    const root = document.documentElement;
+
+    root.style.setProperty("--gallery-w", `${galleryW}px`);
+    root.style.setProperty("--favorites-gap", `${favoritesGap}px`);
+    root.style.setProperty("--favorites-w", `${favoritesW}px`);
+    root.style.setProperty("--finale-gap", `${finaleGap}px`);
+    root.style.setProperty("--finale-w", `${finaleW}px`);
+    root.style.setProperty("--world-w", `${worldW}px`);
+
+    const { height } = getAppViewport();
+    [
+        document.getElementById("garden"),
+        document.getElementById("letterIntro"),
+        document.getElementById("letterCardFlowers"),
+    ].forEach((layer) => {
+        if (!layer) return;
+        layer.setAttribute("width", String(worldW));
+        layer.setAttribute("height", String(height));
+        layer.setAttribute("viewBox", `0 0 ${worldW} ${height}`);
+    });
+
+    if (typeof setScenePanX === "function" && typeof scenePanX === "number") {
+        setScenePanX(scenePanX);
+    }
+
+    syncFinaleGardenSvgs();
+}
+
+function favoritesPhotoboothSrc(index) {
+    return `images/photobooth/photobooth (${index}).jpeg`;
+}
+
+function mountFavoritesArcPhotos() {
+    const host = document.querySelector(".favorites-arc-photos");
+    if (!host || host.dataset.ready === "1") return;
+
+    const root = document.querySelector(".favorites-arc-root");
+    if (root) {
+        root.setAttribute(
+            "transform",
+            `translate(${FAVORITES_ARC_CENTER_X} ${FAVORITES_ARC_CENTER_Y})`
+        );
+    }
+
+    const circle = document.querySelector(".favorites-arc-ring circle");
+    if (circle) {
+        circle.setAttribute("r", String(FAVORITES_ARC_RADIUS));
+    }
+
+    const svgNS = "http://www.w3.org/2000/svg";
+    const imageX = -FAVORITES_ARC_PHOTO_W / 2;
+    const imageY = -FAVORITES_ARC_PHOTO_H;
+    const angleStep = 360 / FAVORITES_ARC_PHOTO_COUNT;
+
+    for (let i = 0; i < FAVORITES_ARC_PHOTO_COUNT; i++) {
+        const deg = 90 + i * angleStep;
+        const rad = (deg * Math.PI) / 180;
+        const x = FAVORITES_ARC_RADIUS * Math.cos(rad);
+        const y = -FAVORITES_ARC_RADIUS * Math.sin(rad);
+        const rot = 90 - deg;
+        const clipId = `favorites-arc-photo-clip-${i}`;
+
+        const group = document.createElementNS(svgNS, "g");
+        group.classList.add("favorites-arc-photo");
+        group.setAttribute("transform", `translate(${x} ${y}) rotate(${rot})`);
+
+        const defs = document.createElementNS(svgNS, "defs");
+        const clipPath = document.createElementNS(svgNS, "clipPath");
+        clipPath.setAttribute("id", clipId);
+        const clipRect = document.createElementNS(svgNS, "rect");
+        clipRect.setAttribute("x", String(imageX));
+        clipRect.setAttribute("y", String(imageY));
+        clipRect.setAttribute("width", String(FAVORITES_ARC_PHOTO_W));
+        clipRect.setAttribute("height", String(FAVORITES_ARC_PHOTO_H));
+        clipRect.setAttribute("rx", "9");
+        clipPath.appendChild(clipRect);
+        defs.appendChild(clipPath);
+        group.appendChild(defs);
+
+        const image = document.createElementNS(svgNS, "image");
+        image.classList.add("favorites-arc-photo-image");
+        image.setAttribute("href", favoritesPhotoboothSrc(i + 1));
+        image.setAttribute("x", String(imageX));
+        image.setAttribute("y", String(imageY));
+        image.setAttribute("width", String(FAVORITES_ARC_PHOTO_W));
+        image.setAttribute("height", String(FAVORITES_ARC_PHOTO_H));
+        image.setAttribute("preserveAspectRatio", "xMidYMax meet");
+        image.setAttribute("clip-path", `url(#${clipId})`);
+        image.addEventListener("error", () => {
+            image.removeAttribute("href");
+        });
+        group.appendChild(image);
+
+        host.appendChild(group);
+    }
+
+    host.dataset.ready = "1";
 }
 
 function galleryImageSrc(index) {
@@ -2917,7 +3269,7 @@ function mountMemoryGallery() {
     inner.className = "memory-gallery-inner";
 
     const title = document.createElement("h2");
-    title.className = "memory-gallery-title";
+    title.className = "pan-section-title";
     title.textContent = "55 REASONS I LOVE YOU";
     host.appendChild(title);
 
@@ -2981,27 +3333,10 @@ function updateWorldLayout() {
         galleryPhotoScale = 1;
     }
 
-    const { width, height } = getAppViewport();
-    const galleryW = getGalleryWidth();
-    const worldW = getAppViewport().width + galleryW;
     const root = document.documentElement;
 
-    root.style.setProperty("--world-w", `${worldW}px`);
-    root.style.setProperty("--gallery-w", `${galleryW}px`);
     root.style.setProperty("--gallery-top-space", `${GALLERY_TOP_SPACE}px`);
-
-    const layers = [
-        document.getElementById("garden"),
-        document.getElementById("letterIntro"),
-        document.getElementById("letterCardFlowers"),
-    ];
-
-    layers.forEach((layer) => {
-        if (!layer) return;
-        layer.setAttribute("width", String(worldW));
-        layer.setAttribute("height", String(height));
-        layer.setAttribute("viewBox", `0 0 ${worldW} ${height}`);
-    });
+    applyWorldDimensions();
 
     if (hasLockedGalleryLayout()) {
         if (galleryLayoutReady) {
@@ -3117,6 +3452,9 @@ function initScene() {
         requestAnimationFrame(() => {
             lockAppViewport();
             mountMemoryGallery();
+            mountFavoritesArcPhotos();
+            applyWorldDimensions();
+            syncFinaleGardenSvgs();
             enableTempGalleryPan();
 
             if (document.body.classList.contains("letter-focus")) {
@@ -3485,7 +3823,7 @@ function registerPlant(plant) {
     }
 }
 
-function beginPlant(baseX, baseY) {
+function beginPlant(baseX, baseY, targetSvg = svg) {
     const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
     group.classList.add("plant");
     const plant = {
@@ -3494,7 +3832,7 @@ function beginPlant(baseX, baseY) {
         baseX,
         baseY,
     };
-    svg.appendChild(group);
+    targetSvg.appendChild(group);
     registerPlant(plant);
     currentPlant = plant;
 }
@@ -4602,10 +4940,10 @@ function growStemFromBase(baseX, bottomY, tipX, tipY, flowerType, withGrass, ben
     finalizeStem(path);
 }
 
-function createStem(x,y){
-
+function createStem(x, y, options = {}) {
+    const targetSvg = options.svg || svg;
     const bottomY = getAppViewport().height;
-    beginPlant(x, bottomY);
+    beginPlant(x, bottomY, targetSvg);
 
     const flowerType = pickFlowerType();
     const hasHeavy = Math.random() < 0.2;
@@ -4632,7 +4970,7 @@ async function mountLoveLetter() {
     const stage = document.getElementById("loveLetterStage");
     if (!stage || stage.querySelector(".love-letter-art")) return;
 
-    const response = await fetch("images/loveletter.svg");
+    const response = await fetch("images/UI/loveletter.svg");
     const svgText = await response.text();
     const doc = new DOMParser().parseFromString(svgText, "image/svg+xml");
     const svg = doc.documentElement;
@@ -4642,7 +4980,7 @@ async function mountLoveLetter() {
     svg.removeAttribute("width");
     svg.removeAttribute("height");
 
-    const stampUrl = new URL("images/stamp.png", window.location.href).href;
+    const stampUrl = new URL("images/UI/stamp.png", window.location.href).href;
     const stampImage = svg.querySelector(".stamp-image");
     if (stampImage) {
         stampImage.setAttribute("href", stampUrl);
@@ -4930,12 +5268,33 @@ function getScenePanX() {
     return scenePanX;
 }
 
-function updateGalleryTitleVisibility() {
-    const host = document.getElementById("memoryGallery");
-    if (!host) return;
+function updatePanSectionTitles() {
+    const zoom = getSceneZoom();
+    const appW = getAppViewport().width;
+    const viewCenter = -scenePanX / zoom + appW / 2;
 
-    const revealAt = getAppViewport().width * 0.28;
-    host.classList.toggle("is-active", -scenePanX >= revealAt);
+    const galleryStart = appW;
+    const galleryEnd = galleryStart + getGalleryWidth();
+    const favoritesStart = galleryEnd + getFavoritesGap();
+    const favoritesEnd = favoritesStart + getFavoritesWidth();
+    const finaleStart = favoritesEnd + getFinaleGap();
+    const finaleEnd = finaleStart + getFinaleWidth();
+
+    const galleryHost = document.getElementById("memoryGallery");
+    const favoritesHost = document.getElementById("favoritesStage");
+
+    galleryHost?.classList.toggle(
+        "is-active",
+        viewCenter >= galleryStart && viewCenter < galleryEnd
+    );
+    favoritesHost?.classList.toggle(
+        "is-active",
+        viewCenter >= favoritesStart && viewCenter < favoritesEnd
+    );
+    document.getElementById("finaleStage")?.classList.toggle(
+        "is-active",
+        viewCenter >= finaleStart && viewCenter < finaleEnd
+    );
 }
 
 function galleryRevealFade(t) {
@@ -5002,7 +5361,7 @@ function setScenePanX(next) {
     const max = getScenePanMax();
     scenePanX = Math.max(-max, Math.min(0, next));
     document.documentElement.style.setProperty("--scene-pan-x", `${scenePanX}px`);
-    updateGalleryTitleVisibility();
+    updatePanSectionTitles();
     updateGalleryCardReveal();
     scheduleCullOffScreenPlants();
 }
@@ -5712,6 +6071,15 @@ document.addEventListener(
         if (!shouldSpawnGardenStem(e.target)) return;
 
         const point = screenPointToLayout(e.clientX, e.clientY);
+
+        if (isPointInFinaleSection(point.x)) {
+            const finaleSvg = getFinaleGardenSvg(getFinalePlantLayer(e.clientY));
+            if (finaleSvg) {
+                createStem(point.x - getFinalePanelLeft(), point.y, { svg: finaleSvg });
+                return;
+            }
+        }
+
         createStem(point.x, point.y);
     }
 );
@@ -5725,11 +6093,11 @@ document.addEventListener("dragstart", (e) => e.preventDefault());
 
 const sky = document.getElementById("sky");
 
-for (let i = 0; i < 45; i++) {
+for (let i = 0; i < 58; i++) {
     const star = document.createElement("div");
     star.className = "star";
     star.style.left = `${Math.random() * 100}%`;
-    star.style.top = `${Math.random() * 38}%`;
+    star.style.top = `${Math.random() * 42}%`;
     const size = 1 + Math.random() * 2.5;
     star.style.width = `${size}px`;
     star.style.height = `${size}px`;
@@ -5773,7 +6141,7 @@ async function initMusicBar() {
 
     let svg;
     try {
-        const response = await fetch("images/musicbar.svg");
+        const response = await fetch("images/UI/musicbar.svg");
         if (!response.ok) return;
         const svgText = await response.text();
         const doc = new DOMParser().parseFromString(svgText, "image/svg+xml");

@@ -1,0 +1,58 @@
+<svg width="610" height="350" viewBox="0 0 610 350" fill="none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<filter id="houseWindowGlow" x="-120%" y="-120%" width="340%" height="340%" color-interpolation-filters="sRGB">
+<feGaussianBlur in="SourceAlpha" stdDeviation="3.5" result="blur"/>
+<feFlood flood-color="#FFE9AE" flood-opacity="0.95" result="glowColor"/>
+<feComposite in="glowColor" in2="blur" operator="in" result="softGlow"/>
+<feGaussianBlur in="softGlow" stdDeviation="7" result="wideGlow"/>
+<feMerge>
+<feMergeNode in="wideGlow"/>
+<feMergeNode in="softGlow"/>
+<feMergeNode in="SourceGraphic"/>
+</feMerge>
+</filter>
+</defs>
+<path d="M118.578 157.683H440.251V333.657H118.578V157.683Z" fill="#251E22"/>
+<path d="M143.104 64.6152H390.064L452.784 170.154H88.7842L143.104 64.6152Z" fill="#22131B"/>
+<path d="M270.899 68.1189L384.746 182.281H157.052L270.899 68.1189Z" fill="#22131B"/>
+<path d="M270 78L374 182H166L270 78Z" fill="#28252D"/>
+<rect x="176.732" y="181.482" width="188.504" height="149.133" fill="#292126"/>
+<path d="M270.984 87.2307L365.236 181.483H176.732L270.984 87.2307Z" fill="#292126"/>
+<path d="M176.732 244.715L365.236 244.715" stroke="#22131B" stroke-width="4"/>
+<path d="M176.732 237.557L365.236 237.557" stroke="#22131B" stroke-width="4"/>
+<path d="M365.223 239.272H440.284" stroke="#22131B" stroke-width="4"/>
+<path d="M118.578 238.75H177.038" stroke="#22131B" stroke-width="4"/>
+<path d="M365.223 245.734H440.284" stroke="#22131B" stroke-width="4"/>
+<path d="M115.708 277.846C115.708 264.166 126.797 253.077 140.477 253.077V253.077C154.156 253.077 165.246 264.166 165.246 277.846V314.462H115.708V277.846Z" fill="#141119"/>
+<path d="M119.208 278.783C119.208 266.94 128.809 257.338 140.653 257.338V257.338C152.497 257.338 162.098 266.94 162.098 278.783V307.166H119.208V278.783Z" fill="#FFE9AE" filter="url(#houseWindowGlow)"/>
+<rect x="116.784" y="186.308" width="46.3077" height="45.2308" fill="#141119"/>
+<rect x="120.015" y="192.769" width="39.8462" height="32.3077" fill="#FFE9AE" filter="url(#houseWindowGlow)"/>
+<path d="M78.8415 121.1L157.683 215.079H0L78.8415 121.1Z" fill="#22131B"/>
+<path d="M78.5535 130.308L150.169 215.385H6.93799L78.5535 130.308Z" fill="#28252D"/>
+<path d="M118.273 245.908H176.733" stroke="#22131B" stroke-width="4"/>
+<rect x="14.4766" y="214.888" width="128.851" height="115.727" fill="#292126"/>
+<path d="M78.902 138.532L143.327 214.888H14.4766L78.902 138.532Z" fill="#292126"/>
+<path d="M14.5068 249.139H143.357" stroke="#22131B" stroke-width="4"/>
+<path d="M14.5068 259.23H143.357" stroke="#22131B" stroke-width="4"/>
+<path d="M244.938 284.039C244.938 270.508 255.907 259.539 269.438 259.539H272.13C285.661 259.539 296.63 270.508 296.63 284.039V330.616H244.938V284.039Z" fill="#1A121A"/>
+<path d="M269.708 259.539H272.631C285.885 259.539 296.631 270.284 296.631 283.539V330.616H269.708V259.539Z" fill="#1D131B"/>
+<path d="M210.477 206.769C210.477 173.462 237.477 146.461 270.784 146.461V146.461C304.091 146.461 331.092 173.462 331.092 206.769V217.538H210.477V206.769Z" fill="#141119"/>
+<path d="M215.71 207.511C215.71 177.205 240.278 152.637 270.584 152.637V152.637C300.889 152.637 325.457 177.205 325.457 207.511V211.295H215.71V207.511Z" fill="#FFE9AE" filter="url(#houseWindowGlow)"/>
+<path d="M376.323 277.846C376.323 264.166 387.412 253.077 401.092 253.077V253.077C414.772 253.077 425.861 264.166 425.861 277.846V314.462H376.323V277.846Z" fill="#141119"/>
+<path d="M379.7 278.783C379.7 266.94 389.301 257.338 401.145 257.338V257.338C412.989 257.338 422.59 266.94 422.59 278.783V307.166H379.7V278.783Z" fill="#FFE9AE" filter="url(#houseWindowGlow)"/>
+<path d="M47.8608 224C47.8608 206.752 61.8433 192.769 79.0916 192.769V192.769C96.3399 192.769 110.322 206.752 110.322 224V240.154H47.8608V224Z" fill="#141119"/>
+<path d="M51.7197 224.54C51.7197 209.562 63.8624 197.419 78.8412 197.419V197.419C93.8199 197.419 105.963 209.562 105.963 224.54V235.263H51.7197V224.54Z" fill="#FFE9AE" filter="url(#houseWindowGlow)"/>
+<rect x="186.784" y="272.461" width="46.3077" height="45.2308" fill="#141119"/>
+<rect x="190.015" y="278.923" width="39.8462" height="32.3077" fill="#FFE9AE" filter="url(#houseWindowGlow)"/>
+<rect x="308.477" y="272.461" width="46.3077" height="45.2308" fill="#141119"/>
+<rect x="377.399" y="186.308" width="46.3077" height="45.2308" fill="#141119"/>
+<rect x="47.8608" y="268.154" width="62.4616" height="50.6154" fill="#141119"/>
+<rect x="311.708" y="278.923" width="39.8462" height="32.3077" fill="#FFE9AE" filter="url(#houseWindowGlow)"/>
+<rect x="380.63" y="192.769" width="39.8462" height="32.3077" fill="#FFE9AE" filter="url(#houseWindowGlow)"/>
+<rect x="51.0918" y="275.692" width="56" height="35.5385" fill="#FFE9AE" filter="url(#houseWindowGlow)"/>
+<path d="M529.197 264.825C484.616 220.244 484.616 147.965 529.197 103.385V103.385V103.385C573.777 147.965 573.777 220.244 529.197 264.825V264.825V264.825Z" fill="#1A2221"/>
+<rect x="525.19" y="238" width="7.53846" height="112" fill="#1A121A"/>
+<path d="M466.235 223.337C407.656 164.758 407.656 69.7836 466.235 11.205L477.44 3.15234e-05L488.645 11.205C547.223 69.7836 547.223 164.758 488.645 223.337L477.44 234.542L466.235 223.337Z" fill="#1C2522"/>
+<rect x="471.344" y="187.385" width="11.8462" height="162.615" fill="#1A121A"/>
+<rect x="6.93799" y="330.615" width="445.846" height="19.3846" fill="#1B1820"/>
+</svg>
