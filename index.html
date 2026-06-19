@@ -1339,7 +1339,7 @@ body.scene-pannable .love-letter-stage{
     position:fixed;
     left:16px;
     bottom:16px;
-    z-index:6;
+    z-index:12;
     pointer-events:auto;
     line-height:0;
     touch-action:none;
@@ -1384,6 +1384,11 @@ body.scene-pannable .love-letter-stage{
 
 .music-bar [data-music-scrubber]{
     cursor:grab;
+}
+
+.music-bar [data-music-secret-pan]{
+    cursor:pointer;
+    pointer-events:all;
 }
 
 .music-bar.is-scrubbing [data-music-scrubber]{
@@ -5517,8 +5522,30 @@ function isScenePanTarget(target) {
 function canScenePan() {
     return (
         document.body.dataset.gardenUnlocked === "1" ||
-        document.body.dataset.tempGalleryPan === "1"
+        document.body.dataset.tempGalleryPan === "1" ||
+        document.body.dataset.secretPanUnlock === "1"
     );
+}
+
+function enableSecretPanAccess() {
+    if (canScenePan()) return;
+
+    document.body.dataset.secretPanUnlock = "1";
+    document.body.classList.add("scene-pannable");
+    setupSceneHorizontalPan();
+
+    const arrow = document.getElementById("panHintArrow");
+    if (arrow) delete arrow.dataset.dismissed;
+    showPanHintArrow();
+
+    document.querySelectorAll("[data-music-secret-pan]").forEach((el) => {
+        el.style.pointerEvents = "none";
+    });
+}
+
+function isMusicSecretPanTarget(target) {
+    if (!(target instanceof Element)) return false;
+    return Boolean(target.closest("[data-music-secret-pan]"));
 }
 
 function enableTempGalleryPan() {
@@ -6401,8 +6428,29 @@ async function initMusicBar() {
     scrubberHit.setAttribute("data-music-scrubber", "1");
     scrubber.appendChild(scrubberHit);
 
+    const photoThumb =
+        root?.querySelector('rect[fill^="url(#pattern"]') ||
+        root?.querySelector('rect[x="9.5"][height="23"]');
+    let secretPanHit = null;
+
+    if (photoThumb) {
+        const photoBox = photoThumb.getBBox();
+        secretPanHit = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        secretPanHit.setAttribute("x", String(photoBox.x));
+        secretPanHit.setAttribute("y", String(photoBox.y));
+        secretPanHit.setAttribute("width", String(photoBox.width));
+        secretPanHit.setAttribute("height", String(photoBox.height));
+        secretPanHit.setAttribute("rx", photoThumb.getAttribute("rx") || "4.5");
+        secretPanHit.setAttribute("fill", "transparent");
+        secretPanHit.setAttribute("data-music-secret-pan", "1");
+        root.appendChild(secretPanHit);
+    }
+
     let draggingScrubber = false;
     let resumeAfterDrag = false;
+    let secretPanTapCount = 0;
+    let secretPanTapTimer = null;
+    const SECRET_PAN_TAP_WINDOW_MS = 900;
 
     function setPlayingUI(playing) {
         playBtn.style.display = playing ? "none" : "block";
@@ -6492,6 +6540,27 @@ async function initMusicBar() {
         "pointerdown",
         (e) => {
             e.stopPropagation();
+
+            if (
+                e.button === 0 &&
+                !canScenePan() &&
+                isMusicSecretPanTarget(e.target)
+            ) {
+                e.preventDefault();
+                secretPanTapCount += 1;
+                clearTimeout(secretPanTapTimer);
+
+                if (secretPanTapCount >= 3) {
+                    secretPanTapCount = 0;
+                    enableSecretPanAccess();
+                    return;
+                }
+
+                secretPanTapTimer = setTimeout(() => {
+                    secretPanTapCount = 0;
+                }, SECRET_PAN_TAP_WINDOW_MS);
+                return;
+            }
 
             if (isMusicControl(e.target)) {
                 e.preventDefault();
