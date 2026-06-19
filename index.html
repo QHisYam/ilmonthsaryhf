@@ -650,7 +650,7 @@ body.scene-pannable .love-letter-stage{
     min-width:100%;
     height:100%;
     max-height:100%;
-    padding:var(--gallery-top-space, 88px) clamp(32px, 4vw, 56px) 24px;
+    padding:var(--gallery-top-space, 88px) var(--gallery-side-pad, 40px) 24px;
     box-sizing:border-box;
     overflow:hidden;
 }
@@ -741,7 +741,7 @@ body.scene-pannable .love-letter-stage{
     max-width:100%;
     box-sizing:border-box;
     font-family:"Petit Formal Script", cursive;
-    font-size:clamp(13px, 1vw, 17px);
+    font-size:clamp(13px, calc(var(--app-w, 100vw) * 0.01), 17px);
     line-height:1.35;
     text-align:center;
     color:rgba(255, 198, 236, 0.96);
@@ -2457,6 +2457,38 @@ function layoutMemoryGalleryMasonry() {
     updateGalleryMarkupLabels();
 }
 
+function getGalleryCardLayoutBounds(card) {
+    const top = parseFloat(card.style.top);
+    const height = card.offsetHeight;
+
+    if (!Number.isFinite(top) || height <= 0) {
+        return null;
+    }
+
+    return { top, bottom: top + height };
+}
+
+function finalizeGalleryLayout() {
+    if (!document.querySelector(".memory-gallery-inner")) return;
+
+    fitGalleryVerticalBounds();
+    remeasureGalleryWidth();
+    updateSceneZoom();
+}
+
+function scheduleGalleryLayoutFinalize() {
+    if (!galleryLayoutReady) return;
+
+    if (window.__galleryFinalizeRaf) {
+        cancelAnimationFrame(window.__galleryFinalizeRaf);
+    }
+
+    window.__galleryFinalizeRaf = requestAnimationFrame(() => {
+        window.__galleryFinalizeRaf = null;
+        finalizeGalleryLayout();
+    });
+}
+
 function getGalleryCardSizeTier(cardIndex) {
     const r = gallerySeed(cardIndex + 43);
     if (r > 0.8) return 1.34;
@@ -2482,6 +2514,7 @@ function fitGalleryVerticalBounds() {
 
     const margin = GALLERY_TOP_SPACE;
     const vh = getAppViewport().height;
+    const floorBottom = vh - 24;
     galleryPhotoScale = 1;
 
     for (let attempt = 0; attempt < 12; attempt++) {
@@ -2492,13 +2525,18 @@ function fitGalleryVerticalBounds() {
         let maxBottom = -Infinity;
 
         inner.querySelectorAll(".memory-card").forEach((card) => {
-            const rect = card.getBoundingClientRect();
-            minTop = Math.min(minTop, rect.top);
-            maxBottom = Math.max(maxBottom, rect.bottom);
+            const bounds = getGalleryCardLayoutBounds(card);
+            if (!bounds) return;
+
+            minTop = Math.min(minTop, bounds.top);
+            maxBottom = Math.max(maxBottom, bounds.bottom);
         });
 
         if (!Number.isFinite(minTop)) return;
-        if (minTop >= margin - 1 && maxBottom <= vh - 24 + 1) return;
+
+        const fitsTop = minTop >= margin - 1;
+        const fitsBottom = maxBottom <= floorBottom + 1;
+        if (fitsTop && fitsBottom) return;
 
         const contentH = Math.max(1, maxBottom - minTop);
         galleryPhotoScale *= clamp((vh - margin - 24) / contentH, 0.82, 0.98);
@@ -2582,8 +2620,7 @@ function scheduleGalleryRelayout() {
     if (galleryRelayoutRaf) return;
     galleryRelayoutRaf = requestAnimationFrame(() => {
         galleryRelayoutRaf = null;
-        fitGalleryVerticalBounds();
-        remeasureGalleryWidth();
+        finalizeGalleryLayout();
     });
 }
 
@@ -2746,21 +2783,24 @@ function updateSceneZoom() {
     if (!appViewport) return;
 
     const { height } = getScreenViewport();
-    const zoom = height / appViewport.height;
+    const zoom = clamp(height / appViewport.height, 0.25, 4);
     document.documentElement.style.setProperty("--scene-zoom", String(zoom));
 }
 
 function lockAppViewport() {
     if (appViewport) return appViewport;
 
+    const screen = getScreenViewport();
     appViewport = {
-        width: window.innerWidth,
-        height: window.innerHeight,
+        width: screen.width,
+        height: screen.height,
     };
 
     const root = document.documentElement;
+    const sidePad = clamp(appViewport.width * 0.04, 32, 56);
     root.style.setProperty("--app-w", `${appViewport.width}px`);
     root.style.setProperty("--app-h", `${appViewport.height}px`);
+    root.style.setProperty("--gallery-side-pad", `${sidePad}px`);
     root.style.setProperty("--scene-zoom", "1");
     root.classList.add("viewport-locked");
     updateWorldLayout();
@@ -2770,6 +2810,7 @@ function lockAppViewport() {
         window.__sceneZoomReady = true;
         window.visualViewport?.addEventListener("resize", updateSceneZoom);
         window.addEventListener("resize", updateSceneZoom);
+        window.addEventListener("orientationchange", updateSceneZoom);
     }
 
     return appViewport;
@@ -2779,9 +2820,33 @@ function getAppViewport() {
     return appViewport || lockAppViewport();
 }
 
-lockAppViewport();
-mountMemoryGallery();
-enableTempGalleryPan();
+async function bootstrapScene() {
+    if (window.__sceneBootstrapped) return;
+    window.__sceneBootstrapped = true;
+
+    if (document.fonts?.ready) {
+        await document.fonts.ready;
+    }
+
+    await new Promise((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(resolve));
+    });
+
+    lockAppViewport();
+    mountMemoryGallery();
+    enableTempGalleryPan();
+}
+
+void bootstrapScene();
+
+window.addEventListener("load", () => {
+    updateSceneZoom();
+    scheduleGalleryLayoutFinalize();
+});
+
+if (document.fonts?.ready) {
+    document.fonts.ready.then(() => scheduleGalleryLayoutFinalize());
+}
 
 function plantAppend(node) {
     currentPlant.group.appendChild(node);
