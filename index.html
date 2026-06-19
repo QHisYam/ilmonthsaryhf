@@ -1225,6 +1225,7 @@ body.scene-pannable .love-letter-stage{
 
 <div class="music-bar" id="musicBar" aria-label="Music player"></div>
 
+<script src="gallery-locked-layout.js"></script>
 <script>
 
 const svg = document.getElementById("garden");
@@ -1322,6 +1323,10 @@ const GALLERY_MANUAL_GLASS_GAPS = [
     [53, 47],
 ];
 const TEMP_GALLERY_PAN = true;
+const GALLERY_LAYOUT_REF_HEIGHT = 945;
+const GALLERY_USE_LOCKED_LAYOUT =
+    !new URLSearchParams(window.location.search).has("bakeLayout") &&
+    typeof GALLERY_LOCKED_LAYOUT !== "undefined";
 let galleryRowCount = 3;
 let measuredGalleryWidth = null;
 let galleryRelayoutRaf = null;
@@ -1469,9 +1474,86 @@ function exportGalleryCaptionsForBake() {
 
 window.exportGalleryCaptionsForBake = exportGalleryCaptionsForBake;
 
+function collectGalleryLayoutSnapshot() {
+    const inner = document.querySelector(".memory-gallery-inner");
+    if (!inner) return null;
+
+    const cards = [...inner.querySelectorAll(".memory-card")]
+        .map((card) => {
+            const cardIndex = parseInt(card.dataset.cardIndex || "0", 10);
+            const photoWrap = card.querySelector(".memory-card-photo-wrap");
+
+            return {
+                cardIndex,
+                left: parseFloat(card.style.left) || 0,
+                top: parseFloat(card.style.top) || 0,
+                width: card.offsetWidth,
+                height: card.offsetHeight,
+                photoW: parseFloat(photoWrap?.style.width) || 0,
+                photoH: parseFloat(photoWrap?.style.height) || 0,
+                heightScale: parseFloat(card.dataset.heightScale || "1"),
+            };
+        })
+        .sort((a, b) => a.cardIndex - b.cardIndex);
+
+    const bricks = [...inner.querySelectorAll(".memory-gallery-glass-brick")].map((brick) => ({
+        label: brick.dataset.glassLabel || "",
+        left: parseFloat(brick.style.left) || 0,
+        top: parseFloat(brick.style.top) || 0,
+        width: parseFloat(brick.dataset.brickW) || brick.offsetWidth,
+        height: parseFloat(brick.dataset.brickH) || brick.offsetHeight,
+        manualGap: brick.dataset.manualGap || null,
+    }));
+
+    return {
+        viewport: {
+            width: getAppViewport().width,
+            height: getAppViewport().height,
+        },
+        innerWidth: parseFloat(inner.style.width) || inner.offsetWidth,
+        rowCount: getGalleryRowCount(),
+        galleryPhotoScale,
+        cards,
+        bricks,
+    };
+}
+
+function exportGalleryLayoutForBake() {
+    finalizeGalleryLayout();
+    const snapshot = collectGalleryLayoutSnapshot();
+
+    if (!snapshot) {
+        console.log("Gallery not ready yet.");
+        return null;
+    }
+
+    const js = `const GALLERY_LOCKED_LAYOUT = ${JSON.stringify(snapshot)};`;
+    console.log(
+        `Baked layout at ${snapshot.viewport.width}×${snapshot.viewport.height}. ` +
+            "Save as gallery-locked-layout.js\n\n" +
+            js
+    );
+
+    if (navigator.clipboard?.writeText) {
+        navigator.clipboard.writeText(js).then(
+            () => console.log("Copied gallery-locked-layout.js to clipboard."),
+            () => {}
+        );
+    }
+
+    return snapshot;
+}
+
+window.collectGalleryLayoutSnapshot = collectGalleryLayoutSnapshot;
+window.exportGalleryLayoutForBake = exportGalleryLayoutForBake;
+
 loadSavedGalleryCaptions();
 
 function getGalleryRowCount() {
+    if (hasLockedGalleryLayout()) {
+        return GALLERY_LOCKED_LAYOUT.rowCount;
+    }
+
     const vh = getAppViewport().height;
     const usable = vh - GALLERY_TOP_SPACE - 24;
     const unitH = 112 + 52;
@@ -1516,6 +1598,10 @@ function getEstimatedGalleryWidth() {
 }
 
 function getGalleryWidth() {
+    if (hasLockedGalleryLayout()) {
+        return GALLERY_LOCKED_LAYOUT.innerWidth;
+    }
+
     return measuredGalleryWidth || getEstimatedGalleryWidth();
 }
 
@@ -2255,6 +2341,112 @@ function galleryFillerArtSrc(label) {
     return `${GALLERY_FILLER_ART_DIR}/filler${label}.png`;
 }
 
+let lockedCardLayoutMap = null;
+
+function getLockedCardLayout(cardIndex) {
+    if (!hasLockedGalleryLayout()) {
+        return null;
+    }
+
+    if (!lockedCardLayoutMap) {
+        lockedCardLayoutMap = new Map(
+            GALLERY_LOCKED_LAYOUT.cards.map((entry) => [entry.cardIndex, entry])
+        );
+    }
+
+    return lockedCardLayoutMap.get(cardIndex) || null;
+}
+
+function mountGalleryGlassBrick(inner, spec) {
+    const brick = document.createElement("div");
+    brick.className = "memory-gallery-glass-brick";
+    brick.setAttribute("aria-hidden", "true");
+    brick.dataset.glassLabel = spec.label;
+
+    if (spec.manualGap) {
+        brick.dataset.manualGap = spec.manualGap;
+    }
+
+    brick.dataset.brickW = String(Math.round(spec.width));
+    brick.dataset.brickH = String(Math.round(spec.height));
+    brick.style.left = `${spec.left}px`;
+    brick.style.top = `${spec.top}px`;
+    brick.style.width = `${spec.width}px`;
+    brick.style.height = `${spec.height}px`;
+
+    const img = document.createElement("img");
+    img.className = "memory-gallery-filler-art";
+    img.alt = "";
+    img.decoding = "async";
+    img.draggable = false;
+
+    const applyFillerArt = () => {
+        brick.classList.add("has-filler-art");
+    };
+
+    img.addEventListener("load", applyFillerArt);
+    img.addEventListener("error", () => img.remove());
+    img.src = galleryFillerArtSrc(spec.label);
+    brick.appendChild(img);
+
+    if (img.complete) {
+        if (img.naturalWidth > 0) {
+            applyFillerArt();
+        } else {
+            img.remove();
+        }
+    }
+
+    inner.appendChild(brick);
+}
+
+function applyLockedCardLayout(card) {
+    const cardIndex = parseInt(card.dataset.cardIndex || "0", 10);
+    const layout = getLockedCardLayout(cardIndex);
+    const photoWrap = card.querySelector(".memory-card-photo-wrap");
+
+    if (!layout || !photoWrap) return false;
+
+    card.dataset.heightScale = String(layout.heightScale);
+    card.style.left = `${layout.left}px`;
+    card.style.top = `${layout.top}px`;
+    card.style.width = `${layout.width}px`;
+    photoWrap.style.width = `${layout.photoW}px`;
+    photoWrap.style.height = `${layout.photoH}px`;
+    photoWrap.style.maxWidth = `${layout.photoW}px`;
+    card.dataset.sized = "1";
+    return true;
+}
+
+function applyLockedGalleryLayout() {
+    if (!hasLockedGalleryLayout()) {
+        return false;
+    }
+
+    const inner = document.querySelector(".memory-gallery-inner");
+    if (!inner) return false;
+
+    const locked = GALLERY_LOCKED_LAYOUT;
+    galleryRowCount = locked.rowCount;
+    galleryPhotoScale = locked.galleryPhotoScale;
+
+    inner.querySelectorAll(".memory-card").forEach((card) => {
+        applyLockedCardLayout(card);
+    });
+
+    inner.querySelectorAll(".memory-gallery-glass-brick").forEach((el) => el.remove());
+
+    locked.bricks.forEach((brick) => {
+        if (GALLERY_REMOVED_GLASS_LABELS.has(brick.label)) return;
+        mountGalleryGlassBrick(inner, brick);
+    });
+
+    inner.style.width = `${locked.innerWidth}px`;
+    measuredGalleryWidth = locked.innerWidth;
+    updateGalleryMarkupLabels();
+    return true;
+}
+
 function galleryMarkerLetter(index) {
     let n = index;
     let label = "";
@@ -2471,6 +2663,12 @@ function getGalleryCardLayoutBounds(card) {
 function finalizeGalleryLayout() {
     if (!document.querySelector(".memory-gallery-inner")) return;
 
+    if (hasLockedGalleryLayout() && applyLockedGalleryLayout()) {
+        remeasureGalleryWidth();
+        updateSceneZoom();
+        return;
+    }
+
     fitGalleryVerticalBounds();
     remeasureGalleryWidth();
     updateSceneZoom();
@@ -2553,6 +2751,10 @@ function getMemoryCardInnerWidth() {
 }
 
 function fitMemoryCardImage(card, img, photoWrap) {
+    if (hasLockedGalleryLayout() && applyLockedCardLayout(card)) {
+        return;
+    }
+
     const heightScale = parseFloat(card.dataset.heightScale || "1");
     let photoH = getGalleryPhotoHeight() * heightScale;
     const maxPhotoW = getMemoryCardInnerWidth();
@@ -2591,7 +2793,12 @@ function remeasureGalleryWidth() {
     const inner = document.querySelector(".memory-gallery-inner");
     if (!inner) return;
 
-    measuredGalleryWidth = inner.offsetWidth;
+    if (hasLockedGalleryLayout()) {
+        measuredGalleryWidth = GALLERY_LOCKED_LAYOUT.innerWidth;
+        inner.style.width = `${measuredGalleryWidth}px`;
+    } else {
+        measuredGalleryWidth = inner.offsetWidth;
+    }
 
     const worldW = getAppViewport().width + measuredGalleryWidth;
     const root = document.documentElement;
@@ -2625,6 +2832,7 @@ function scheduleGalleryRelayout() {
 }
 
 function settleGalleryImage(img) {
+    if (hasLockedGalleryLayout()) return;
     if (img.dataset.gallerySettled === "1") return;
     img.dataset.gallerySettled = "1";
     galleryImagesPending = Math.max(0, galleryImagesPending - 1);
@@ -2638,8 +2846,14 @@ function settleGalleryImage(img) {
 function bindMemoryCardImage(card, img, photoWrap) {
     const applySize = () => {
         fitMemoryCardImage(card, img, photoWrap);
-        scheduleGalleryRelayout();
+        if (!hasLockedGalleryLayout()) {
+            scheduleGalleryRelayout();
+        }
     };
+
+    if (hasLockedGalleryLayout() && applyLockedCardLayout(card)) {
+        return;
+    }
 
     img.addEventListener("load", () => {
         settleGalleryImage(img);
@@ -2740,11 +2954,21 @@ function mountMemoryGallery() {
 
     host.appendChild(inner);
     host.dataset.ready = "1";
+
+    if (hasLockedGalleryLayout()) {
+        galleryImagesPending = 0;
+        galleryLayoutReady = true;
+        applyLockedGalleryLayout();
+        remeasureGalleryWidth();
+        updateSceneZoom();
+    }
 }
 
 function updateWorldLayout() {
-    measuredGalleryWidth = null;
-    galleryPhotoScale = 1;
+    if (!hasLockedGalleryLayout()) {
+        measuredGalleryWidth = null;
+        galleryPhotoScale = 1;
+    }
 
     const { width, height } = getAppViewport();
     const galleryW = getGalleryWidth();
@@ -2768,7 +2992,14 @@ function updateWorldLayout() {
         layer.setAttribute("viewBox", `0 0 ${worldW} ${height}`);
     });
 
-    scheduleGalleryRelayout();
+    if (hasLockedGalleryLayout()) {
+        if (galleryLayoutReady) {
+            applyLockedGalleryLayout();
+            remeasureGalleryWidth();
+        }
+    } else {
+        scheduleGalleryRelayout();
+    }
 }
 
 function getScreenViewport() {
@@ -2776,6 +3007,43 @@ function getScreenViewport() {
     return {
         width: vv?.width ?? window.innerWidth,
         height: vv?.height ?? window.innerHeight,
+    };
+}
+
+function hasLockedGalleryLayout() {
+    return (
+        GALLERY_USE_LOCKED_LAYOUT &&
+        typeof GALLERY_LOCKED_LAYOUT !== "undefined" &&
+        Array.isArray(GALLERY_LOCKED_LAYOUT.cards)
+    );
+}
+
+function getSceneZoom() {
+    return (
+        parseFloat(
+            getComputedStyle(document.documentElement).getPropertyValue("--scene-zoom")
+        ) || 1
+    );
+}
+
+function screenPointToLayout(clientX, clientY) {
+    const zoom = getSceneZoom();
+    return {
+        x: (clientX - getScenePanX()) / zoom,
+        y: clientY / zoom,
+    };
+}
+
+function screenRectToLayout(rect) {
+    const zoom = getSceneZoom();
+    const pan = getScenePanX();
+    return {
+        left: (rect.left - pan) / zoom,
+        right: (rect.right - pan) / zoom,
+        top: rect.top / zoom,
+        bottom: rect.bottom / zoom,
+        width: rect.width / zoom,
+        height: rect.height / zoom,
     };
 }
 
@@ -2790,14 +3058,24 @@ function updateSceneZoom() {
 function lockAppViewport() {
     if (appViewport) return appViewport;
 
-    const screen = getScreenViewport();
-    appViewport = {
-        width: screen.width,
-        height: screen.height,
-    };
+    if (hasLockedGalleryLayout()) {
+        appViewport = {
+            width: GALLERY_LOCKED_LAYOUT.viewport.width,
+            height: GALLERY_LOCKED_LAYOUT.viewport.height,
+        };
+    } else {
+        const screen = getScreenViewport();
+        appViewport = {
+            width: screen.width,
+            height: screen.height,
+        };
+    }
 
     const root = document.documentElement;
-    const sidePad = clamp(appViewport.width * 0.04, 32, 56);
+    const sidePad =
+        hasLockedGalleryLayout() && GALLERY_LOCKED_LAYOUT.cards[0]
+            ? GALLERY_LOCKED_LAYOUT.cards[0].left
+            : clamp(appViewport.width * 0.04, 32, 56);
     root.style.setProperty("--app-w", `${appViewport.width}px`);
     root.style.setProperty("--app-h", `${appViewport.height}px`);
     root.style.setProperty("--gallery-side-pad", `${sidePad}px`);
@@ -2820,32 +3098,21 @@ function getAppViewport() {
     return appViewport || lockAppViewport();
 }
 
-async function bootstrapScene() {
-    if (window.__sceneBootstrapped) return;
-    window.__sceneBootstrapped = true;
+function initScene() {
+    if (window.__sceneInitialized) return;
+    window.__sceneInitialized = true;
 
-    if (document.fonts?.ready) {
-        await document.fonts.ready;
-    }
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            lockAppViewport();
+            mountMemoryGallery();
+            enableTempGalleryPan();
 
-    await new Promise((resolve) => {
-        requestAnimationFrame(() => requestAnimationFrame(resolve));
+            if (document.body.classList.contains("letter-focus")) {
+                void mountLoveLetter().then(() => growLoveLetterIntro());
+            }
+        });
     });
-
-    lockAppViewport();
-    mountMemoryGallery();
-    enableTempGalleryPan();
-}
-
-void bootstrapScene();
-
-window.addEventListener("load", () => {
-    updateSceneZoom();
-    scheduleGalleryLayoutFinalize();
-});
-
-if (document.fonts?.ready) {
-    document.fonts.ready.then(() => scheduleGalleryLayoutFinalize());
 }
 
 function plantAppend(node) {
@@ -4969,7 +5236,7 @@ function growLetterCardSideFlowers(letterArt) {
     const card = letterArt?.querySelector(".letter-card");
     if (!stage || !card || stage.dataset.cardFlowersGrown === "1") return;
 
-    const cardRect = card.getBoundingClientRect();
+    const cardRect = screenRectToLayout(card.getBoundingClientRect());
     if (cardRect.width < 1 || cardRect.height < 1) return;
 
     const svg = ensureLetterCardFlowersSvg();
@@ -5050,12 +5317,15 @@ function syncLetterCardGlassHost(letterArt) {
         return;
     }
 
+    const zoom = getSceneZoom();
+    const layoutWidth = cardRect.width / zoom;
+    const layoutHeight = cardRect.height / zoom;
     const overlayStyle = {
-        left: `${cardRect.left - stageRect.left}px`,
-        top: `${cardRect.top - stageRect.top}px`,
-        width: `${cardRect.width}px`,
-        height: `${cardRect.height}px`,
-        borderRadius: `${(2.5 / 253.17) * cardRect.width}px`,
+        left: `${(cardRect.left - stageRect.left) / zoom}px`,
+        top: `${(cardRect.top - stageRect.top) / zoom}px`,
+        width: `${layoutWidth}px`,
+        height: `${layoutHeight}px`,
+        borderRadius: `${(2.5 / 253.17) * layoutWidth}px`,
     };
 
     Object.assign(glassHost.style, overlayStyle);
@@ -5063,7 +5333,7 @@ function syncLetterCardGlassHost(letterArt) {
 
     if (textHost) {
         Object.assign(textHost.style, overlayStyle);
-        textHost.style.fontSize = `${cardRect.width * 0.042}px`;
+        textHost.style.fontSize = `${layoutWidth * 0.042}px`;
         updateLetterCardFades(textHost);
     }
 }
@@ -5369,7 +5639,8 @@ document.addEventListener(
         if (document.body.dataset.scenePanMoved === "1") return;
         if (!shouldSpawnGardenStem(e.target)) return;
 
-        createStem(e.clientX - getScenePanX(), e.clientY);
+        const point = screenPointToLayout(e.clientX, e.clientY);
+        createStem(point.x, point.y);
     }
 );
 
@@ -5395,8 +5666,10 @@ for (let i = 0; i < 45; i++) {
     sky.appendChild(star);
 }
 
-if (document.body.classList.contains("letter-focus")) {
-    mountLoveLetter().then(() => growLoveLetterIntro());
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initScene, { once: true });
+} else {
+    initScene();
 }
 
 const MUSIC_TRACK = { x: 53, y: 9, width: 99, height: 2 };
