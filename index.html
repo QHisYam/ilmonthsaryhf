@@ -5528,11 +5528,10 @@ function canScenePan() {
 }
 
 function enableSecretPanAccess() {
-    if (canScenePan()) return;
+    if (document.body.dataset.gardenUnlocked === "1") return;
 
     document.body.dataset.secretPanUnlock = "1";
-    document.body.classList.add("scene-pannable");
-    setupSceneHorizontalPan();
+    enableGardenInteraction();
 
     const arrow = document.getElementById("panHintArrow");
     if (arrow) delete arrow.dataset.dismissed;
