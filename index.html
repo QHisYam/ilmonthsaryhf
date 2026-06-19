@@ -46,6 +46,7 @@ html.viewport-locked #letterIntro,
 html.viewport-locked #letterCardFlowers,
 html.viewport-locked #memoryGallery,
 html.viewport-locked #favoritesStage,
+html.viewport-locked #playlistStage,
 html.viewport-locked #finaleStage,
 html.viewport-locked .love-letter-stage{
     position:fixed;
@@ -84,6 +85,7 @@ body.scene-pannable #letterIntro,
 body.scene-pannable #letterCardFlowers,
 body.scene-pannable #memoryGallery,
 body.scene-pannable #favoritesStage,
+body.scene-pannable #playlistStage,
 body.scene-pannable #finaleStage,
 body.scene-pannable .love-letter-stage{
     transform:scale(var(--scene-zoom, 1))
@@ -704,6 +706,62 @@ body.scene-pannable .love-letter-stage{
     box-sizing:border-box;
 }
 
+#playlistStage{
+    position:fixed;
+    top:0;
+    left:0;
+    z-index:1;
+    width:var(--world-w, 100vw);
+    height:var(--app-h, 100vh);
+    pointer-events:none;
+    overflow:hidden;
+}
+
+.playlist-stage-panel{
+    position:absolute;
+    top:0;
+    left:calc(
+        var(--app-w) + var(--gallery-w, 0px) + var(--favorites-gap, 0px) +
+        var(--favorites-w, 0px) + var(--playlist-gap, 0px)
+    );
+    width:var(--playlist-w, var(--app-w));
+    height:100%;
+    box-sizing:border-box;
+    pointer-events:none;
+}
+
+.playlist-embeds{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:clamp(14px, 2vh, 20px);
+    width:100%;
+    height:100%;
+    padding:clamp(92px, 13vh, 112px) clamp(20px, 4vw, 40px) 28px;
+    box-sizing:border-box;
+}
+
+.playlist-embeds-row{
+    display:flex;
+    gap:clamp(16px, 2.5vw, 24px);
+    justify-content:center;
+    width:auto;
+}
+
+.playlist-embed{
+    flex:0 0 auto;
+    width:300px;
+    height:152px;
+    border:0;
+    border-radius:12px;
+    background:transparent;
+    pointer-events:auto;
+    box-shadow:
+        0 10px 28px rgba(0, 0, 0, 0.24),
+        0 0 18px rgba(255, 120, 210, 0.12);
+}
+
 #finaleStage{
     position:fixed;
     top:0;
@@ -720,7 +778,8 @@ body.scene-pannable .love-letter-stage{
     top:0;
     left:calc(
         var(--app-w) + var(--gallery-w, 0px) + var(--favorites-gap, 0px) +
-        var(--favorites-w, 0px) + var(--finale-gap, 0px)
+        var(--favorites-w, 0px) + var(--playlist-gap, 0px) +
+        var(--playlist-w, 0px) + var(--finale-gap, 0px)
     );
     width:var(--finale-w, var(--app-w));
     height:100%;
@@ -1431,6 +1490,286 @@ body.scene-pannable .love-letter-stage{
     </div>
 </div>
 
+<div id="playlistStage" class="playlist-stage" aria-hidden="true">
+    <h2 class="pan-section-title">SONGS THAT REMINDS ME OF YOU</h2>
+    <div class="playlist-stage-panel" aria-hidden="true">
+        <div class="playlist-embeds">
+            <div class="playlist-embeds-row">
+                <iframe
+                    class="playlist-embed"
+                    title="Putri Iklan by ST12"
+                    src="https://open.spotify.com/embed/track/2KvzB5VX0f7LVWYn88H6Ti?utm_source=generator"
+                    width="300"
+                    height="152"
+                    frameborder="0"
+                    allowfullscreen
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy"
+                ></iframe>
+                <iframe
+                    class="playlist-embed"
+                    title="RAGAMAN"
+                    src="https://open.spotify.com/embed/track/7fVEN8fGt7LJxabnvFSx0K?utm_source=generator"
+                    width="300"
+                    height="152"
+                    frameborder="0"
+                    allowfullscreen
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy"
+                ></iframe>
+                <iframe
+                    class="playlist-embed"
+                    title="Malam Bulan Di Pagar Bintang"
+                    src="https://open.spotify.com/embed/track/5Cbgzs0ouvm5DigfAWjGOk?utm_source=generator"
+                    width="300"
+                    height="152"
+                    frameborder="0"
+                    allowfullscreen
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy"
+                ></iframe>
+                <iframe
+                    class="playlist-embed"
+                    title="penjaga hati"
+                    src="https://open.spotify.com/embed/track/7F4tV8SiUy6itZTdAzdafO?utm_source=generator"
+                    width="300"
+                    height="152"
+                    frameborder="0"
+                    allowfullscreen
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy"
+                ></iframe>
+                <iframe
+                    class="playlist-embed"
+                    title="Sedetik Lebih"
+                    src="https://open.spotify.com/embed/track/0wU81ztD9Phud7dVlJXvcx?utm_source=generator"
+                    width="300"
+                    height="152"
+                    frameborder="0"
+                    allowfullscreen
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy"
+                ></iframe>
+                <iframe
+                    class="playlist-embed"
+                    title="Every Time I Close My Eyes"
+                    src="https://open.spotify.com/embed/track/2ur86gejngdRnhbfAMgbT2?utm_source=generator"
+                    width="300"
+                    height="152"
+                    frameborder="0"
+                    allowfullscreen
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy"
+                ></iframe>
+            </div>
+            <div class="playlist-embeds-row">
+                <iframe
+                    class="playlist-embed"
+                    title="Bunga by MASDO"
+                    src="https://open.spotify.com/embed/track/4LzCVeWfVy2nkdwBcHDwxt?utm_source=generator"
+                    width="300"
+                    height="152"
+                    frameborder="0"
+                    allowfullscreen
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy"
+                ></iframe>
+                <iframe
+                    class="playlist-embed"
+                    title="dekati."
+                    src="https://open.spotify.com/embed/track/67r1Hc0bFPMYEvhPya4B2z?utm_source=generator"
+                    width="300"
+                    height="152"
+                    frameborder="0"
+                    allowfullscreen
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy"
+                ></iframe>
+                <iframe
+                    class="playlist-embed"
+                    title="Nak Dara Rindu"
+                    src="https://open.spotify.com/embed/track/6WDznaFLCO4BxdQcYK6m7z?utm_source=generator"
+                    width="300"
+                    height="152"
+                    frameborder="0"
+                    allowfullscreen
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy"
+                ></iframe>
+                <iframe
+                    class="playlist-embed"
+                    title="Datanglah sang puteri"
+                    src="https://open.spotify.com/embed/track/3uyYI5pOD9R1PctrzGeGAX?utm_source=generator"
+                    width="300"
+                    height="152"
+                    frameborder="0"
+                    allowfullscreen
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy"
+                ></iframe>
+                <iframe
+                    class="playlist-embed"
+                    title="Glue Song"
+                    src="https://open.spotify.com/embed/track/3iBgrkexCzVuPy4O9vx7Mf?utm_source=generator"
+                    width="300"
+                    height="152"
+                    frameborder="0"
+                    allowfullscreen
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy"
+                ></iframe>
+                <iframe
+                    class="playlist-embed"
+                    title="love."
+                    src="https://open.spotify.com/embed/track/5mtTAScDytxMMqZj14NmlN?utm_source=generator"
+                    width="300"
+                    height="152"
+                    frameborder="0"
+                    allowfullscreen
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy"
+                ></iframe>
+            </div>
+            <div class="playlist-embeds-row">
+                <iframe
+                    class="playlist-embed"
+                    title="Dinda by MASDO"
+                    src="https://open.spotify.com/embed/track/0YxZwR2nJViImRcbNpDQDj?utm_source=generator"
+                    width="300"
+                    height="152"
+                    frameborder="0"
+                    allowfullscreen
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy"
+                ></iframe>
+                <iframe
+                    class="playlist-embed"
+                    title="Getaran Jiwa"
+                    src="https://open.spotify.com/embed/track/5omhVrDWK6JnR8TvVyicSS?utm_source=generator"
+                    width="300"
+                    height="152"
+                    frameborder="0"
+                    allowfullscreen
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy"
+                ></iframe>
+                <iframe
+                    class="playlist-embed"
+                    title="Distant Lover"
+                    src="https://open.spotify.com/embed/track/7vpkmzisaB8R47XlxyTcfs?utm_source=generator"
+                    width="300"
+                    height="152"
+                    frameborder="0"
+                    allowfullscreen
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy"
+                ></iframe>
+                <iframe
+                    class="playlist-embed"
+                    title="Dugaannya"
+                    src="https://open.spotify.com/embed/track/6FAYx3IsAQLD4pfwd5cRVv?utm_source=generator"
+                    width="300"
+                    height="152"
+                    frameborder="0"
+                    allowfullscreen
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy"
+                ></iframe>
+                <iframe
+                    class="playlist-embed"
+                    title="Dealova"
+                    src="https://open.spotify.com/embed/track/4Eybcl06frChLYoXm0sxJi?utm_source=generator"
+                    width="300"
+                    height="152"
+                    frameborder="0"
+                    allowfullscreen
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy"
+                ></iframe>
+                <iframe
+                    class="playlist-embed"
+                    title="Risk It All"
+                    src="https://open.spotify.com/embed/track/5y2ijHECwFYWqcAHKTZgzD?utm_source=generator"
+                    width="300"
+                    height="152"
+                    frameborder="0"
+                    allowfullscreen
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy"
+                ></iframe>
+            </div>
+            <div class="playlist-embeds-row">
+                <iframe
+                    class="playlist-embed"
+                    title="Sempurna"
+                    src="https://open.spotify.com/embed/track/67C6LHREqmytK923Ak6R0I?utm_source=generator"
+                    width="300"
+                    height="152"
+                    frameborder="0"
+                    allowfullscreen
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy"
+                ></iframe>
+                <iframe
+                    class="playlist-embed"
+                    title="Heaven Can Wait"
+                    src="https://open.spotify.com/embed/track/1AZXNAVDD9ZFIEKySgflFz?utm_source=generator"
+                    width="300"
+                    height="152"
+                    frameborder="0"
+                    allowfullscreen
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy"
+                ></iframe>
+                <iframe
+                    class="playlist-embed"
+                    title="You Rock My World"
+                    src="https://open.spotify.com/embed/track/1Lhwn4PqeGpM4LTVUowW76?utm_source=generator"
+                    width="300"
+                    height="152"
+                    frameborder="0"
+                    allowfullscreen
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy"
+                ></iframe>
+                <iframe
+                    class="playlist-embed"
+                    title="kota ini tak sama tanpamu (with Aziz Harun &amp; Aisha Retno)"
+                    src="https://open.spotify.com/embed/track/75DnXTAoFiorMrqkPVbjSH?utm_source=generator"
+                    width="300"
+                    height="152"
+                    frameborder="0"
+                    allowfullscreen
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy"
+                ></iframe>
+                <iframe
+                    class="playlist-embed"
+                    title="call you mine"
+                    src="https://open.spotify.com/embed/track/1RXMpxqF0t1h3Pe2v4BUHA?utm_source=generator"
+                    width="300"
+                    height="152"
+                    frameborder="0"
+                    allowfullscreen
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy"
+                ></iframe>
+                <iframe
+                    class="playlist-embed"
+                    title="Sleep Well"
+                    src="https://open.spotify.com/embed/track/61MhXxcy6MUhrDeHCDE7AP?utm_source=generator"
+                    width="300"
+                    height="152"
+                    frameborder="0"
+                    allowfullscreen
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy"
+                ></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div id="finaleStage" class="finale-stage" aria-hidden="true">
     <h2 class="pan-section-title pan-section-title--finale">
         <span>I love loving you.</span>
@@ -1525,6 +1864,8 @@ const GALLERY_CAPTIONS_EDITABLE = false;
 // TODO: remove temp gallery pan when the gallery section is finished
 const FAVORITES_SECTION_SCREENS = 1;
 const FAVORITES_SECTION_GAP_SCREENS = 0.25;
+const PLAYLIST_SECTION_SCREENS = 1;
+const PLAYLIST_SECTION_GAP_SCREENS = 0.25;
 const FINALE_SECTION_SCREENS = 1;
 const FINALE_SECTION_GAP_SCREENS = 0.25;
 const FINALE_GATES_SHIFT_X = 48;
@@ -3116,6 +3457,14 @@ function getFavoritesWidth() {
     return getAppViewport().width * FAVORITES_SECTION_SCREENS;
 }
 
+function getPlaylistGap() {
+    return getAppViewport().width * PLAYLIST_SECTION_GAP_SCREENS;
+}
+
+function getPlaylistWidth() {
+    return getAppViewport().width * PLAYLIST_SECTION_SCREENS;
+}
+
 function getFinaleGap() {
     return getAppViewport().width * FINALE_SECTION_GAP_SCREENS;
 }
@@ -3130,18 +3479,24 @@ function getFinaleGatesWidth() {
 }
 
 function getFinaleSecondGateLayoutRight() {
+    const panelW = getFinaleWidth();
+    const gatesW = getFinaleGatesWidth();
+    const gatesLeftInPanel = (panelW - gatesW) / 2 + FINALE_GATES_SHIFT_X;
+    const calculated = getFinalePanelLeft() + gatesLeftInPanel + gatesW;
+    const finaleStart = getFinalePanelLeft();
+
     const gate = document.querySelector(".finale-gate:last-child");
     if (gate?.isConnected) {
         const layout = screenRectToLayout(gate.getBoundingClientRect());
-        if (Number.isFinite(layout.right) && layout.right > 0) {
+        if (
+            Number.isFinite(layout.right) &&
+            layout.right > finaleStart + 48
+        ) {
             return layout.right;
         }
     }
 
-    const panelW = getFinaleWidth();
-    const gatesW = getFinaleGatesWidth();
-    const gatesLeftInPanel = (panelW - gatesW) / 2 + FINALE_GATES_SHIFT_X;
-    return getFinalePanelLeft() + gatesLeftInPanel + gatesW;
+    return calculated;
 }
 
 function getPanScrollWidth() {
@@ -3149,6 +3504,8 @@ function getPanScrollWidth() {
         getGalleryWidth() +
         getFavoritesGap() +
         getFavoritesWidth() +
+        getPlaylistGap() +
+        getPlaylistWidth() +
         getFinaleGap() +
         getFinaleWidth()
     );
@@ -3195,6 +3552,8 @@ function getFinalePanelLeft() {
         getGalleryWidth() +
         getFavoritesGap() +
         getFavoritesWidth() +
+        getPlaylistGap() +
+        getPlaylistWidth() +
         getFinaleGap()
     );
 }
@@ -3232,6 +3591,8 @@ function applyWorldDimensions() {
     const galleryW = getGalleryWidth();
     const favoritesGap = getFavoritesGap();
     const favoritesW = getFavoritesWidth();
+    const playlistGap = getPlaylistGap();
+    const playlistW = getPlaylistWidth();
     const finaleGap = getFinaleGap();
     const finaleW = getFinaleWidth();
     const worldW = getWorldWidth();
@@ -3240,6 +3601,8 @@ function applyWorldDimensions() {
     root.style.setProperty("--gallery-w", `${galleryW}px`);
     root.style.setProperty("--favorites-gap", `${favoritesGap}px`);
     root.style.setProperty("--favorites-w", `${favoritesW}px`);
+    root.style.setProperty("--playlist-gap", `${playlistGap}px`);
+    root.style.setProperty("--playlist-w", `${playlistW}px`);
     root.style.setProperty("--finale-gap", `${finaleGap}px`);
     root.style.setProperty("--finale-w", `${finaleW}px`);
     root.style.setProperty("--world-w", `${worldW}px`);
@@ -5396,29 +5759,36 @@ function updatePanSectionTitles() {
     const galleryEnd = galleryStart + getGalleryWidth();
     const favoritesStart = galleryEnd + getFavoritesGap();
     const favoritesEnd = favoritesStart + getFavoritesWidth();
-    const finaleStart = favoritesEnd + getFinaleGap();
+    const playlistStart = favoritesEnd + getPlaylistGap();
+    const playlistEnd = playlistStart + getPlaylistWidth();
+    const finaleStart = playlistEnd + getFinaleGap();
 
     const fadeBand = clamp(viewWidth * 0.38, 280, 480);
     const crossfadeGap = clamp(viewWidth * 0.1, 72, 140);
     const boundaryIntroGallery = galleryStart;
     const boundaryGalleryFavorites = (galleryEnd + favoritesStart) / 2;
-    const boundaryFavoritesFinale = (favoritesEnd + finaleStart) / 2;
+    const boundaryFavoritesPlaylist = (favoritesEnd + playlistStart) / 2;
+    const boundaryPlaylistFinale = (playlistEnd + finaleStart) / 2;
 
     const galleryOpacity =
         panTitleFadeIn(viewCenter, boundaryIntroGallery, fadeBand) *
         panTitleFadeOut(viewCenter, boundaryGalleryFavorites, fadeBand, crossfadeGap);
     const favoritesOpacity =
         panTitleFadeIn(viewCenter, boundaryGalleryFavorites, fadeBand, crossfadeGap) *
-        panTitleFadeOut(viewCenter, boundaryFavoritesFinale, fadeBand, crossfadeGap);
+        panTitleFadeOut(viewCenter, boundaryFavoritesPlaylist, fadeBand, crossfadeGap);
+    const playlistOpacity =
+        panTitleFadeIn(viewCenter, boundaryFavoritesPlaylist, fadeBand, crossfadeGap) *
+        panTitleFadeOut(viewCenter, boundaryPlaylistFinale, fadeBand, crossfadeGap);
     const finaleOpacity = panTitleFadeIn(
         viewCenter,
-        boundaryFavoritesFinale,
+        boundaryPlaylistFinale,
         fadeBand,
         crossfadeGap
     );
 
     setPanSectionTitleOpacity("memoryGallery", galleryOpacity);
     setPanSectionTitleOpacity("favoritesStage", favoritesOpacity);
+    setPanSectionTitleOpacity("playlistStage", playlistOpacity);
     setPanSectionTitleOpacity("finaleStage", finaleOpacity);
 }
 
@@ -5515,7 +5885,7 @@ function updatePanHintArrowForPan() {
 function isScenePanTarget(target) {
     if (!(target instanceof Element)) return false;
     return !target.closest(
-        ".letter-card-text-host, .music-bar, [data-music-toggle], [data-music-track], [data-music-scrubber], .memory-card-caption-input, button, a, input, textarea, select, label"
+        ".letter-card-text-host, .music-bar, .playlist-embed, [data-music-toggle], [data-music-track], [data-music-scrubber], .memory-card-caption-input, button, a, input, textarea, select, label"
     );
 }
 
