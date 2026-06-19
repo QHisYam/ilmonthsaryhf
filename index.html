@@ -1559,7 +1559,7 @@ const GALLERY_MANUAL_GLASS_GAPS = [
     [35, 38],
     [53, 47],
 ];
-const TEMP_GALLERY_PAN = true;
+const TEMP_GALLERY_PAN = false;
 const GALLERY_LAYOUT_REF_HEIGHT = 945;
 const GALLERY_USE_LOCKED_LAYOUT =
     !new URLSearchParams(window.location.search).has("bakeLayout") &&
@@ -3538,7 +3538,6 @@ function initScene() {
             mountFavoritesArcPhotos();
             applyWorldDimensions();
             syncFinaleGardenSvgs();
-            enableTempGalleryPan();
             updateTitlePinPosition();
             updatePanSectionTitles();
 
@@ -5358,12 +5357,16 @@ function panTitleSmoothstep(edge0, edge1, value) {
     return t * t * (3 - 2 * t);
 }
 
-function panTitleFadeIn(viewCenter, boundary, fadeBand) {
-    return panTitleSmoothstep(boundary - fadeBand, boundary + fadeBand, viewCenter);
+function panTitleFadeIn(viewCenter, boundary, fadeBand, gap = 0) {
+    const fadeStart = boundary + gap;
+    const fadeEnd = boundary + fadeBand + gap;
+    return panTitleSmoothstep(fadeStart, fadeEnd, viewCenter);
 }
 
-function panTitleFadeOut(viewCenter, boundary, fadeBand) {
-    return 1 - panTitleSmoothstep(boundary - fadeBand, boundary + fadeBand, viewCenter);
+function panTitleFadeOut(viewCenter, boundary, fadeBand, lead = 0) {
+    const fadeStart = boundary - fadeBand - lead;
+    const fadeEnd = boundary - lead;
+    return 1 - panTitleSmoothstep(fadeStart, fadeEnd, viewCenter);
 }
 
 function setPanSectionTitleOpacity(hostId, opacity) {
@@ -5390,21 +5393,23 @@ function updatePanSectionTitles() {
     const favoritesEnd = favoritesStart + getFavoritesWidth();
     const finaleStart = favoritesEnd + getFinaleGap();
 
-    const fadeBand = clamp(viewWidth * 0.42, 320, 560);
+    const fadeBand = clamp(viewWidth * 0.38, 280, 480);
+    const crossfadeGap = clamp(viewWidth * 0.1, 72, 140);
     const boundaryIntroGallery = galleryStart;
     const boundaryGalleryFavorites = (galleryEnd + favoritesStart) / 2;
     const boundaryFavoritesFinale = (favoritesEnd + finaleStart) / 2;
 
     const galleryOpacity =
         panTitleFadeIn(viewCenter, boundaryIntroGallery, fadeBand) *
-        panTitleFadeOut(viewCenter, boundaryGalleryFavorites, fadeBand);
+        panTitleFadeOut(viewCenter, boundaryGalleryFavorites, fadeBand, crossfadeGap);
     const favoritesOpacity =
-        panTitleFadeIn(viewCenter, boundaryGalleryFavorites, fadeBand) *
-        panTitleFadeOut(viewCenter, boundaryFavoritesFinale, fadeBand);
+        panTitleFadeIn(viewCenter, boundaryGalleryFavorites, fadeBand, crossfadeGap) *
+        panTitleFadeOut(viewCenter, boundaryFavoritesFinale, fadeBand, crossfadeGap);
     const finaleOpacity = panTitleFadeIn(
         viewCenter,
         boundaryFavoritesFinale,
-        fadeBand
+        fadeBand,
+        crossfadeGap
     );
 
     setPanSectionTitleOpacity("memoryGallery", galleryOpacity);
