@@ -1,0 +1,5631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Petit+Formal+Script&display=swap" rel="stylesheet">
+
+<style>
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    width:100vw;
+    height:100vh;
+    overflow:hidden;
+    background:#000;
+    cursor:pointer;
+}
+
+html{
+    background:#000;
+}
+
+html.viewport-locked,
+html.viewport-locked body{
+    width:var(--app-w);
+    height:var(--app-h);
+    max-width:var(--app-w);
+    max-height:var(--app-h);
+    overflow:hidden;
+}
+
+html.viewport-locked body{
+    position:fixed;
+    top:0;
+    left:0;
+}
+
+html.viewport-locked .sky,
+html.viewport-locked #garden,
+html.viewport-locked #letterIntro,
+html.viewport-locked #letterCardFlowers,
+html.viewport-locked #memoryGallery,
+html.viewport-locked .love-letter-stage{
+    position:fixed;
+    top:0;
+    left:0;
+    width:var(--world-w);
+    height:var(--app-h);
+    transform:scale(var(--scene-zoom, 1));
+    transform-origin:top left;
+}
+
+html.viewport-locked .love-letter-art{
+    width:min(calc(var(--app-w) * 0.92), 520px);
+}
+
+body.letter-focus{
+    cursor:default;
+}
+
+body.letter-focus #garden{
+    visibility:hidden;
+    pointer-events:none;
+}
+
+body.scene-pannable{
+    cursor:grab;
+}
+
+body.scene-pannable.scene-pan-dragging{
+    cursor:grabbing;
+}
+
+body.scene-pannable .sky,
+body.scene-pannable #garden,
+body.scene-pannable #letterIntro,
+body.scene-pannable #letterCardFlowers,
+body.scene-pannable #memoryGallery,
+body.scene-pannable .love-letter-stage{
+    transform:scale(var(--scene-zoom, 1))
+        translateX(calc(var(--scene-pan-x, 0px) / var(--scene-zoom, 1)));
+}
+
+.letter-card-wrap .letter-card,
+.letter-card-wrap .letter-card-highlight,
+.letter-card-wrap .letter-card-border,
+.letter-card-wrap .letter-card-texture{
+    transform-box:view-box;
+}
+
+.letter-card-glass-host{
+    position:absolute;
+    z-index:4;
+    pointer-events:none;
+    opacity:0;
+    overflow:hidden;
+}
+
+.letter-card-glass-host.is-active{
+    opacity:1;
+}
+
+.letter-card-glass-pane{
+    width:100%;
+    height:100%;
+    background:rgba(8,5,12,0.5);
+    -webkit-backdrop-filter:blur(14px) saturate(1.15);
+    backdrop-filter:blur(14px) saturate(1.15);
+}
+
+.letter-card-text-host{
+    position:absolute;
+    z-index:10;
+    pointer-events:none;
+    opacity:0;
+    overflow:hidden;
+    transition:opacity 0.35s ease;
+}
+
+.letter-card-text-host.is-visible{
+    opacity:1;
+    pointer-events:auto;
+    overflow-y:auto;
+    overflow-x:auto;
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
+    touch-action:none;
+    cursor:grab;
+    scrollbar-width:none;
+    --fade-top:0px;
+    --fade-bottom:0px;
+    -webkit-mask-image:linear-gradient(
+        to bottom,
+        transparent 0,
+        #000 var(--fade-top),
+        #000 calc(100% - var(--fade-bottom)),
+        transparent 100%
+    );
+    mask-image:linear-gradient(
+        to bottom,
+        transparent 0,
+        #000 var(--fade-top),
+        #000 calc(100% - var(--fade-bottom)),
+        transparent 100%
+    );
+}
+
+.letter-card-text-host.is-visible::-webkit-scrollbar{
+    display:none;
+}
+
+.letter-card-text-host.is-drag-scrolling{
+    cursor:grabbing;
+    user-select:none;
+}
+
+.letter-card-copy{
+    width:100%;
+    min-height:100%;
+    margin:0;
+    padding:9% 8% 10%;
+    overflow:visible;
+    font-family:"Petit Formal Script", cursive;
+    color:rgba(255, 245, 252, 0.94);
+    line-height:1.55;
+    text-align:center;
+    text-shadow:
+        0 0 12px rgba(255, 210, 245, 0.95),
+        0 0 28px rgba(255, 160, 225, 0.72),
+        0 0 48px rgba(255, 120, 210, 0.52),
+        0 0 72px rgba(255, 80, 195, 0.35);
+}
+
+.letter-card-copy p{
+    margin:0 0 0.85em;
+}
+
+.letter-card-copy p:last-child{
+    margin-bottom:0;
+}
+
+.letter-yes-button{
+    display:block;
+    position:relative;
+    margin:1.1em auto 1.15em;
+    padding:0.55em 3.35em;
+    min-width:9.2em;
+    border:1px solid rgba(255, 207, 250, 0.58);
+    border-radius:999px;
+    background:rgba(255, 105, 195, 0.14);
+    -webkit-backdrop-filter:blur(12px) saturate(1.12);
+    backdrop-filter:blur(12px) saturate(1.12);
+    box-shadow:
+        0 0 18px rgba(255, 140, 220, 0.22),
+        inset 0 0 20px rgba(255, 180, 235, 0.08);
+    font-family:"Petit Formal Script", cursive;
+    font-size:1.05em;
+    font-weight:600;
+    -webkit-text-stroke:0.22px rgba(255, 228, 248, 0.42);
+    line-height:1;
+    color:rgba(255, 228, 248, 0.98);
+    text-shadow:
+        0 0 12px rgba(255, 210, 245, 0.95),
+        0 0 28px rgba(255, 160, 225, 0.72),
+        0 0 48px rgba(255, 120, 210, 0.52);
+    opacity:0;
+    transform:translateY(10px) scale(0.94);
+    transition:
+        opacity 0.55s ease,
+        transform 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 0.35s ease;
+    cursor:pointer;
+    pointer-events:auto;
+}
+
+.letter-yes-button.is-visible{
+    opacity:1;
+    transform:translateY(0) scale(1);
+}
+
+.letter-yes-button:hover{
+    box-shadow:
+        0 0 24px rgba(255, 150, 225, 0.38),
+        inset 0 0 24px rgba(255, 190, 235, 0.12);
+}
+
+.letter-tap-hint{
+    margin-top:2.35em;
+    font-weight:700;
+    -webkit-text-stroke:0.28px rgba(255, 228, 248, 0.5);
+}
+
+.letter-tap-hint .letter-char{
+    text-shadow:
+        0 0 14px rgba(255, 210, 245, 0.98),
+        0 0 32px rgba(255, 160, 225, 0.82),
+        0 0 56px rgba(255, 120, 210, 0.62),
+        0 0 80px rgba(255, 80, 195, 0.42);
+}
+
+.letter-word{
+    display:inline-block;
+    white-space:nowrap;
+}
+
+.letter-char{
+    opacity:0;
+    animation:letter-in 0.18s ease-out forwards;
+    text-shadow:
+        0 0 12px rgba(255, 210, 245, 0.95),
+        0 0 28px rgba(255, 160, 225, 0.72),
+        0 0 48px rgba(255, 120, 210, 0.52),
+        0 0 72px rgba(255, 80, 195, 0.35);
+}
+
+.letter-space{
+    display:inline-block;
+    width:0.28em;
+}
+
+@keyframes letter-in{
+    to{
+        opacity:1;
+    }
+}
+
+.love-letter-stage .love-letter-art{
+    position:relative;
+    z-index:3;
+}
+
+.letter-card-highlight,
+.letter-card-border{
+    pointer-events:none;
+}
+
+.letter-card-highlight{
+    mix-blend-mode:screen;
+    opacity:0.82;
+}
+
+.letter-card-texture{
+    pointer-events:none;
+    visibility:hidden;
+}
+
+.love-letter-art.is-stretching-card .letter-card,
+.love-letter-art.is-extending-card-down .letter-card{
+    fill:transparent;
+}
+
+.love-letter-art.is-stretching-card .letter-card,
+.love-letter-art.is-stretching-card .letter-card-highlight,
+.love-letter-art.is-stretching-card .letter-card-border,
+.love-letter-art.is-stretching-card .letter-card-texture{
+    animation:letter-card-extend-up 2.1s ease-out forwards;
+}
+
+@keyframes letter-card-extend-up{
+    from{
+        y:2.715px;
+        height:175.57px;
+    }
+    to{
+        y:-111.405px;
+        height:289.69px;
+    }
+}
+
+.love-letter-art.is-extending-card-down .letter-card,
+.love-letter-art.is-extending-card-down .letter-card-highlight,
+.love-letter-art.is-extending-card-down .letter-card-border,
+.love-letter-art.is-extending-card-down .letter-card-texture{
+    animation:letter-card-extend-down 2.1s ease-out forwards;
+}
+
+@keyframes letter-card-extend-down{
+    from{
+        height:289.69px;
+    }
+    to{
+        height:362.11px;
+    }
+}
+
+.love-letter-stage{
+    position:fixed;
+    top:0;
+    left:0;
+    z-index:2;
+    width:var(--world-w, 100vw);
+    height:var(--app-h, 100vh);
+    display:grid;
+    grid-template-columns:var(--app-w) minmax(0, 1fr);
+    align-items:center;
+    justify-items:center;
+    pointer-events:none;
+    overflow:visible;
+}
+
+.love-letter-stage > *{
+    grid-column:1;
+    grid-row:1;
+}
+
+.love-letter-stage.is-interactive{
+    cursor:default;
+}
+
+.love-letter-stage.is-interactive .love-letter-art{
+    pointer-events:auto;
+    cursor:default;
+}
+
+.love-letter-art.envelope-open .envelope-flaps-3d{
+    transform-style:preserve-3d;
+    perspective:1400px;
+    perspective-origin:center center;
+}
+
+.love-letter-art.is-blooming{
+    visibility:visible;
+    opacity:1;
+    animation:letter-bloom 950ms ease-out forwards;
+    transform-style:preserve-3d;
+}
+
+.love-letter-art.is-bloomed{
+    visibility:visible;
+    opacity:1;
+    transform:none;
+    transform-style:preserve-3d;
+}
+
+.love-letter-art.is-blooming .envelope-base,
+.love-letter-art.is-bloomed:not(.is-retracting-envelope) .envelope-base{
+    transform-box:view-box;
+    transform-origin:130.5px 90.5px;
+    filter:
+        drop-shadow(0 0 6px rgba(255, 190, 245, 0.55))
+        drop-shadow(0 0 18px rgba(255, 140, 225, 0.42))
+        drop-shadow(0 0 34px rgba(255, 110, 210, 0.3))
+        drop-shadow(0 0 52px rgba(255, 80, 190, 0.18));
+    animation:letter-glow 3.2s ease-in-out 950ms infinite;
+}
+
+@keyframes letter-bloom-retract{
+    from{
+        transform:scale(1);
+    }
+    to{
+        transform:scale(0);
+    }
+}
+
+.love-letter-art.is-retracting-envelope .envelope-base{
+    transform-box:view-box;
+    transform-origin:130.5px 90.5px;
+    filter:
+        drop-shadow(0 0 6px rgba(255, 190, 245, 0.55))
+        drop-shadow(0 0 18px rgba(255, 140, 225, 0.42))
+        drop-shadow(0 0 34px rgba(255, 110, 210, 0.3))
+        drop-shadow(0 0 52px rgba(255, 80, 190, 0.18));
+    animation:
+        letter-bloom-retract var(--envelope-retract) ease-in-out var(--card-extend-up) forwards,
+        letter-glow-fade-out var(--envelope-retract) ease-out var(--card-extend-up) forwards;
+}
+
+.love-heart-wrap{
+    transform-box:view-box;
+    transform-origin:131px 138px;
+    transition:
+        transform 1.05s cubic-bezier(0.33, 1.12, 0.64, 1),
+        filter 1.05s ease,
+        opacity 1.1s ease;
+}
+
+.flap-bottom-fold{
+    transform-box:view-box;
+    transform-origin:130.5px 181px;
+    transform-style:preserve-3d;
+    backface-visibility:hidden;
+    transition:
+        transform 0.58s ease-in-out,
+        opacity 0.18s ease-out;
+}
+
+.stamp-image{
+    pointer-events:none;
+}
+
+.flap-bottom.is-open .flap-bottom-fold{
+    transform:rotateX(-90deg);
+}
+
+.flap-bottom.is-vanished .flap-bottom-fold{
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+}
+
+.love-heart-wrap.is-peeled,
+.love-letter-stage.is-interactive .love-letter-art:hover .love-heart-wrap:not(.is-faded){
+    transform:rotate(-26deg) translate(-7px, -16px);
+    filter:drop-shadow(-3px 6px 8px rgba(80, 0, 40, 0.28));
+}
+
+.love-heart-wrap.is-faded{
+    opacity:0;
+    pointer-events:none;
+    transition:opacity 1.1s ease;
+}
+
+.envelope-flap{
+    transform-style:preserve-3d;
+}
+
+.envelope-flap > *{
+    transform-box:view-box;
+    transform-style:preserve-3d;
+    backface-visibility:hidden;
+    transition:
+        transform 0.58s ease-in-out,
+        opacity 0.18s ease-out;
+}
+
+.envelope-flap.is-vanished > *{
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+}
+
+.flap-right > *{
+    transform-origin:261px 90.5px;
+}
+
+.flap-right.is-open > *{
+    transform:rotateY(90deg);
+}
+
+.flap-left > *{
+    transform-origin:0px 90.5px;
+}
+
+.flap-left.is-open > *{
+    transform:rotateY(-90deg);
+}
+
+.flap-top > *{
+    transform-origin:130.5px 0px;
+}
+
+.flap-top.is-open > *{
+    transform:rotateX(90deg);
+}
+
+.love-letter-art{
+    --card-extend-up:2.1s;
+    --envelope-retract:1.8s;
+    display:block;
+    position:static;
+    width:min(92vw, 520px);
+    height:auto;
+    overflow:visible;
+    visibility:hidden;
+    opacity:0;
+    transform:scale(0);
+    transform-origin:center center;
+    filter:none;
+    pointer-events:none;
+}
+
+@keyframes letter-bloom{
+    from{
+        transform:scale(0);
+    }
+    to{
+        transform:scale(1);
+    }
+}
+
+@keyframes letter-glow-fade-out{
+    from{
+        filter:
+            drop-shadow(0 0 6px rgba(255, 190, 245, 0.55))
+            drop-shadow(0 0 18px rgba(255, 140, 225, 0.42))
+            drop-shadow(0 0 34px rgba(255, 110, 210, 0.3))
+            drop-shadow(0 0 52px rgba(255, 80, 190, 0.18));
+    }
+    to{
+        filter:
+            drop-shadow(0 0 6px rgba(255, 190, 245, 0))
+            drop-shadow(0 0 18px rgba(255, 140, 225, 0))
+            drop-shadow(0 0 34px rgba(255, 110, 210, 0))
+            drop-shadow(0 0 52px rgba(255, 80, 190, 0));
+    }
+}
+
+@keyframes letter-glow{
+    0%, 100%{
+        filter:
+            drop-shadow(0 0 6px rgba(255, 190, 245, 0.55))
+            drop-shadow(0 0 18px rgba(255, 140, 225, 0.42))
+            drop-shadow(0 0 34px rgba(255, 110, 210, 0.3))
+            drop-shadow(0 0 52px rgba(255, 80, 190, 0.18));
+    }
+    50%{
+        filter:
+            drop-shadow(0 0 9px rgba(255, 200, 250, 0.65))
+            drop-shadow(0 0 24px rgba(255, 150, 230, 0.5))
+            drop-shadow(0 0 42px rgba(255, 120, 215, 0.38))
+            drop-shadow(0 0 60px rgba(255, 90, 195, 0.24));
+    }
+}
+
+#letterIntro{
+    z-index:1;
+}
+
+.sky{
+    position:fixed;
+    top:0;
+    left:0;
+    width:var(--world-w, 100vw);
+    height:var(--app-h, 100vh);
+    z-index:0;
+    pointer-events:none;
+    overflow:hidden;
+}
+
+.aurora{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    background:
+        linear-gradient(
+            100deg,
+            rgba(150, 230, 210, 0.09) 0%,
+            rgba(255, 175, 215, 0.07) 50%,
+            rgba(186, 160, 255, 0.09) 100%
+        ),
+        linear-gradient(
+            to bottom,
+            rgba(186, 160, 255, 0.15) 0%,
+            rgba(170, 195, 255, 0.08) 15%,
+            rgba(100, 90, 130, 0.04) 35%,
+            rgba(40, 35, 55, 0.015) 55%,
+            #000000 80%
+        );
+}
+
+.star{
+    position:absolute;
+    border-radius:50%;
+    background:#fff;
+    box-shadow:0 0 4px rgba(255, 255, 255, 0.6);
+    animation:star-twinkle var(--dur) ease-in-out infinite;
+    animation-delay:var(--delay);
+}
+
+@keyframes star-twinkle{
+    0%, 100%{
+        opacity:0.12;
+        transform:scale(0.5);
+    }
+    50%{
+        opacity:0.95;
+        transform:scale(1.1);
+    }
+}
+
+#garden,
+#letterIntro,
+#letterCardFlowers{
+    position:fixed;
+    top:0;
+    left:0;
+    z-index:1;
+    width:100%;
+    height:var(--app-h, 100vh);
+    pointer-events:none;
+}
+
+#letterCardFlowers{
+    z-index:2;
+}
+
+#memoryGallery{
+    position:fixed;
+    top:0;
+    left:0;
+    z-index:1;
+    width:var(--world-w, 100vw);
+    height:var(--app-h, 100vh);
+    pointer-events:none;
+    overflow:hidden;
+}
+
+.memory-gallery-inner{
+    position:absolute;
+    top:0;
+    left:var(--app-w);
+    width:max-content;
+    min-width:100%;
+    height:100%;
+    max-height:100%;
+    padding:var(--gallery-top-space, 88px) clamp(32px, 4vw, 56px) 24px;
+    box-sizing:border-box;
+    overflow:hidden;
+}
+
+.memory-gallery-title{
+    position:absolute;
+    top:28px;
+    left:calc(var(--app-w) / 2 - var(--scene-pan-x, 0px));
+    z-index:20;
+    transform:translateX(-50%);
+    width:max-content;
+    max-width:min(92vw, calc(var(--app-w) * 0.92));
+    margin:0;
+    padding:16px 16px 0;
+    font-family:"Petit Formal Script", cursive;
+    font-size:clamp(24px, 3.4vw, 40px);
+    font-weight:400;
+    line-height:1.15;
+    letter-spacing:0.06em;
+    text-align:center;
+    white-space:nowrap;
+    color:rgba(255, 212, 238, 0.98);
+    text-shadow:
+        0 0 14px rgba(255, 170, 230, 0.62),
+        0 0 30px rgba(255, 120, 210, 0.38),
+        0 2px 8px rgba(0, 0, 0, 0.45);
+    pointer-events:none;
+    user-select:none;
+    opacity:0;
+    visibility:hidden;
+    transition:opacity 0.35s ease, visibility 0.35s ease;
+}
+
+#memoryGallery.is-active .memory-gallery-title{
+    opacity:1;
+    visibility:visible;
+}
+
+.memory-card{
+    position:absolute;
+    top:0;
+    left:0;
+    z-index:1;
+    flex:0 0 auto;
+    width:fit-content;
+    max-width:min(320px, 40vw);
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    overflow:hidden;
+    border-radius:18px;
+    border:1px solid rgba(255, 255, 255, 0.38);
+    background:rgba(255, 255, 255, 0.055);
+    -webkit-backdrop-filter:blur(14px) saturate(1.12);
+    backdrop-filter:blur(14px) saturate(1.12);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.14),
+        0 10px 28px rgba(0, 0, 0, 0.22);
+    padding:9px;
+    box-sizing:border-box;
+}
+
+.memory-card-photo-wrap{
+    position:relative;
+    border-radius:13px;
+    overflow:hidden;
+    background:rgba(0, 0, 0, 0.28);
+    border:2.5px solid rgba(255, 255, 255, 0.94);
+    box-sizing:border-box;
+    max-width:100%;
+    align-self:center;
+    flex-shrink:0;
+}
+
+.memory-card-photo{
+    display:block;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+.memory-card-caption{
+    margin:0;
+    padding:12px 5px 2px;
+    min-height:2.3em;
+    min-width:0;
+    width:100%;
+    max-width:100%;
+    box-sizing:border-box;
+    font-family:"Petit Formal Script", cursive;
+    font-size:clamp(13px, 1vw, 17px);
+    line-height:1.35;
+    text-align:center;
+    color:rgba(255, 198, 236, 0.96);
+    text-shadow:
+        0 0 10px rgba(255, 170, 230, 0.55),
+        0 0 22px rgba(255, 120, 210, 0.32);
+    white-space:nowrap;
+    overflow:visible;
+}
+
+.memory-card-caption:empty::before{
+    content:"";
+    display:block;
+    height:1.35em;
+}
+
+.memory-card.is-caption-editable{
+    pointer-events:none;
+}
+
+.memory-card-caption-input{
+    position:relative;
+    z-index:2;
+    pointer-events:auto;
+    cursor:text;
+    outline:none;
+}
+
+.memory-card-caption-input:empty::before{
+    content:"";
+    display:block;
+    height:1.35em;
+}
+
+.memory-card-caption-input:focus:empty::before{
+    content:attr(data-placeholder);
+    height:auto;
+    color:rgba(255, 198, 236, 0.42);
+    text-shadow:none;
+}
+
+.memory-gallery-glass-brick{
+    position:absolute;
+    top:0;
+    left:0;
+    z-index:0;
+    border-radius:18px;
+    border:1px solid rgba(255, 255, 255, 0.38);
+    background:rgba(255, 255, 255, 0.055);
+    -webkit-backdrop-filter:blur(14px) saturate(1.12);
+    backdrop-filter:blur(14px) saturate(1.12);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.14),
+        0 10px 28px rgba(0, 0, 0, 0.22);
+    box-sizing:border-box;
+    pointer-events:none;
+}
+
+.memory-gallery-glass-brick.has-filler-art{
+    background:transparent;
+    border:none;
+    box-shadow:none;
+    -webkit-backdrop-filter:none;
+    backdrop-filter:none;
+    overflow:hidden;
+}
+
+.memory-gallery-filler-art{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    object-position:center;
+    pointer-events:none;
+    user-select:none;
+}
+
+.memory-gallery-glass-brick.has-filler-art .memory-gallery-marker,
+.memory-gallery-glass-brick.has-filler-art .memory-gallery-marker-dim{
+    display:none;
+}
+
+.memory-gallery-marker{
+    position:absolute;
+    top:6px;
+    left:6px;
+    z-index:3;
+    min-width:1.65em;
+    padding:3px 7px;
+    border-radius:999px;
+    font-family:ui-monospace, "Cascadia Code", "Segoe UI Mono", monospace;
+    font-size:12px;
+    font-weight:700;
+    line-height:1.1;
+    letter-spacing:0.02em;
+    text-align:center;
+    pointer-events:none;
+    user-select:none;
+    box-shadow:0 2px 10px rgba(0, 0, 0, 0.35);
+}
+
+.memory-gallery-marker.is-photo{
+    color:#fff;
+    background:rgba(210, 40, 120, 0.92);
+    border:1.5px solid rgba(255, 220, 240, 0.95);
+}
+
+.memory-card.has-caption .memory-gallery-marker.is-photo{
+    display:none;
+}
+
+.memory-gallery-marker.is-glass{
+    color:#1a1020;
+    background:rgba(170, 255, 220, 0.94);
+    border:1.5px solid rgba(220, 255, 240, 0.95);
+}
+
+.memory-gallery-marker-dim{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:8px;
+    font-family:ui-monospace, "Cascadia Code", "Segoe UI Mono", monospace;
+    font-size:clamp(10px, 1.1vw, 13px);
+    font-weight:600;
+    line-height:1.2;
+    letter-spacing:0.03em;
+    text-align:center;
+    color:rgba(255, 255, 255, 0.92);
+    text-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.85),
+        0 0 12px rgba(0, 0, 0, 0.55);
+    pointer-events:none;
+    user-select:none;
+}
+
+/* Stem */
+
+.stem{
+    fill:none;
+    stroke:#dff5e6;
+    stroke-width:6.65;
+    stroke-linecap:butt;
+    stroke-linejoin:round;
+
+    filter:
+        drop-shadow(0 0 6px #2ecc71)
+        drop-shadow(0 0 18px #2ecc71);
+
+    stroke-dasharray:var(--length);
+    stroke-dashoffset:var(--length);
+
+    animation:
+        grow var(--duration)
+        ease-in-out
+        forwards;
+}
+
+.leaf{
+    fill:#dff5e6;
+    stroke:none;
+    transform-box: fill-box;
+    transform-origin: 0 0;
+    transform: scale(0);
+
+    filter:
+        drop-shadow(0 0 6px #2ecc71)
+        drop-shadow(0 0 18px #2ecc71);
+
+    animation:
+        leaf-grow 650ms
+        ease-out
+        forwards;
+}
+
+@keyframes leaf-grow{
+    to{
+        transform: scale(1);
+    }
+}
+
+.grass-clump{
+    transform-box: fill-box;
+    transform-origin: 43px 88px;
+    transform: scaleY(0);
+
+    filter:
+        drop-shadow(0 0 6px #2ecc71)
+        drop-shadow(0 0 18px #2ecc71);
+
+    animation:
+        grass-grow 650ms
+        ease-out
+        forwards;
+}
+
+@keyframes grass-grow{
+    to{
+        transform: scaleY(1);
+    }
+}
+
+.heavy-leaf{
+    fill:#dff5e6;
+    stroke:none;
+    transform-box: fill-box;
+    transform-origin: 0 0;
+    transform: scale(0);
+
+    filter: drop-shadow(0 0 6px #2ecc71);
+
+    animation:
+        leaf-grow 500ms
+        ease-out
+        forwards;
+}
+
+@keyframes grow{
+    to{
+        stroke-dashoffset:0;
+    }
+}
+
+.calyx-glow{
+    filter:
+        drop-shadow(0 0 6px #2ecc71)
+        drop-shadow(0 0 18px #2ecc71);
+}
+
+.petal{
+    transform-box: fill-box;
+    transform-origin: 80px 120px;
+    transform: scaleY(0);
+
+    filter: drop-shadow(0 0 36px rgba(255, 140, 222, 1));
+
+    animation:
+        petal-grow 900ms
+        ease-out
+        forwards;
+}
+
+.desert-petal-glow{
+    filter: drop-shadow(0 0 36px rgba(255, 140, 222, 1));
+}
+
+@keyframes petal-grow{
+    to{
+        transform: scaleY(1);
+    }
+}
+
+.rose-sway{
+    transform-box: fill-box;
+    transform-origin: 80px 120px;
+    animation: rose-sway 5.5s ease-in-out infinite;
+}
+
+.desert-sway{
+    transform-box: fill-box;
+    transform-origin: 51px 47.8374px;
+    animation: rose-sway 5.5s ease-in-out infinite;
+}
+
+.tulip-petal{
+    transform-box: fill-box;
+    transform-origin: 25px 58px;
+    transform: scaleY(0);
+
+    filter: drop-shadow(0 0 36px rgba(255, 140, 222, 1));
+
+    animation:
+        petal-grow 900ms
+        ease-out
+        forwards;
+}
+
+.tulip-sway{
+    transform-box: fill-box;
+    transform-origin: 25px 58px;
+    animation: rose-sway 5.5s ease-in-out infinite;
+}
+
+.tulip-blade{
+    fill:#dff5e6;
+    stroke:none;
+    transform-origin: 0 0;
+    transform: scaleY(0);
+
+    filter:
+        drop-shadow(0 0 6px #2ecc71)
+        drop-shadow(0 0 18px #2ecc71);
+
+    animation:
+        tulip-blade-grow 900ms
+        ease-out
+        forwards;
+}
+
+@keyframes tulip-blade-grow{
+    to{
+        transform: scaleY(1);
+    }
+}
+
+.larkspur-leaf{
+    transform-origin: 0 0;
+    transform: scale(0);
+
+    filter: drop-shadow(0 0 32px rgba(255, 140, 222, 1));
+
+    animation:
+        leaf-grow 550ms
+        ease-out
+        forwards;
+}
+
+.larkspur-bloom{
+    transform-box: fill-box;
+    transform-origin: center;
+    transform: scale(0);
+
+    filter: drop-shadow(0 0 34px rgba(255, 140, 222, 1));
+
+    animation:
+        leaf-grow 650ms
+        ease-out
+        forwards;
+}
+
+.larkspur-sway{
+    transform-box: fill-box;
+    transform-origin: 0 0;
+    animation: rose-sway 6s ease-in-out infinite;
+}
+
+.daisy-sway{
+    transform-box: fill-box;
+    transform-origin: 96.2185px 97.7576px;
+    animation: rose-sway 5.5s ease-in-out infinite;
+}
+
+.daisy-petal-glow{
+    filter: drop-shadow(0 0 36px rgba(255, 140, 222, 1));
+}
+
+@keyframes rose-sway{
+    0%, 100%{
+        transform: rotate(-3.5deg);
+    }
+    50%{
+        transform: rotate(3.5deg);
+    }
+}
+
+@keyframes retract-bloom-y{
+    from{ transform:scaleY(1); }
+    to{ transform:scaleY(0); }
+}
+
+@keyframes retract-bloom{
+    from{ transform:scale(1); }
+    to{ transform:scale(0); }
+}
+
+@keyframes retract-leaf{
+    from{
+        transform:scale(1);
+        opacity:1;
+    }
+    to{
+        transform:scale(0);
+        opacity:0;
+    }
+}
+
+@keyframes retract-grass{
+    from{ transform:scaleY(1); }
+    to{ transform:scaleY(0); }
+}
+
+.retract-bloom-y{
+    animation:retract-bloom-y 900ms ease-in forwards !important;
+}
+
+.retract-bloom{
+    animation:retract-bloom 700ms ease-in forwards !important;
+}
+
+.retract-leaf{
+    animation:retract-leaf 650ms ease-in-out forwards !important;
+}
+
+.retract-larkspur-leaf{
+    animation:retract-leaf 100ms ease-in forwards !important;
+}
+
+.retract-grass{
+    animation:retract-grass 650ms ease-out forwards !important;
+}
+
+.music-bar{
+    position:fixed;
+    left:16px;
+    bottom:16px;
+    z-index:6;
+    pointer-events:auto;
+    line-height:0;
+    touch-action:none;
+}
+
+.music-bar > svg{
+    position:relative;
+    z-index:1;
+    display:block;
+    width:400px;
+    max-width:72vw;
+    height:auto;
+    overflow:visible;
+}
+
+.music-bar-glass-layer{
+    position:absolute;
+    left:2.454%;
+    top:0;
+    width:95.092%;
+    height:80.952%;
+    border-radius:6.45% / 29.41%;
+    background:rgba(45,45,45,0.19);
+    -webkit-backdrop-filter:blur(14px) saturate(1.15);
+    backdrop-filter:blur(14px) saturate(1.15);
+    pointer-events:none;
+    z-index:0;
+}
+
+.music-bar img{
+    display:block;
+    width:400px;
+    max-width:72vw;
+    height:auto;
+}
+
+.music-bar [data-music-play],
+.music-bar [data-music-pause],
+.music-bar [data-music-toggle]{
+    cursor:pointer;
+}
+
+.music-bar [data-music-scrubber]{
+    cursor:grab;
+}
+
+.music-bar.is-scrubbing [data-music-scrubber]{
+    cursor:grabbing;
+}
+
+.music-bar [data-music-track]{
+    cursor:pointer;
+}
+</style>
+</head>
+
+<body class="letter-focus">
+
+<div class="sky" id="sky">
+    <div class="aurora"></div>
+</div>
+
+<svg id="garden"></svg>
+
+<svg id="letterIntro" aria-hidden="true"></svg>
+
+<svg id="letterCardFlowers" aria-hidden="true"></svg>
+
+<div class="love-letter-stage" id="loveLetterStage"></div>
+
+<div id="memoryGallery" class="memory-gallery" aria-hidden="true"></div>
+
+<div class="music-bar" id="musicBar" aria-label="Music player"></div>
+
+<script>
+
+const svg = document.getElementById("garden");
+
+const MAX_PLANTS = 30;
+const plantRegistry = [];
+let currentPlant = null;
+let cardFlowerContext = null;
+let loveLetterIntroState = null;
+const GALLERY_CARD_COUNT = 55;
+const GALLERY_CAPTIONS = Array.from({ length: GALLERY_CARD_COUNT }, () => "");
+GALLERY_CAPTIONS[0] = "You make me more patient";
+GALLERY_CAPTIONS[1] = "Your energy";
+GALLERY_CAPTIONS[2] = "Your playful side";
+GALLERY_CAPTIONS[3] = "Your randomness";
+GALLERY_CAPTIONS[4] = "You stay engaged when I talk";
+GALLERY_CAPTIONS[5] = "Your way of speaking";
+GALLERY_CAPTIONS[6] = "You listen properly";
+GALLERY_CAPTIONS[7] = "You show up for me";
+GALLERY_CAPTIONS[8] = "Your presence";
+GALLERY_CAPTIONS[9] = "You heal me";
+GALLERY_CAPTIONS[10] = "Your eyes";
+GALLERY_CAPTIONS[11] = "Your hair";
+GALLERY_CAPTIONS[12] = "You make me feel accepted";
+GALLERY_CAPTIONS[13] = "You're a gem";
+GALLERY_CAPTIONS[14] = "You're vivid";
+GALLERY_CAPTIONS[15] = "Your beauty";
+GALLERY_CAPTIONS[16] = "Your effort to understand me";
+GALLERY_CAPTIONS[17] = "Your little habits";
+GALLERY_CAPTIONS[18] = "Your affection";
+GALLERY_CAPTIONS[19] = "Your sincerity";
+GALLERY_CAPTIONS[20] = "You communicate honestly";
+GALLERY_CAPTIONS[21] = "Your soul";
+GALLERY_CAPTIONS[22] = "Your heart";
+GALLERY_CAPTIONS[23] = "Your voice";
+GALLERY_CAPTIONS[24] = "Your laugh";
+GALLERY_CAPTIONS[25] = "You're cool";
+GALLERY_CAPTIONS[26] = "Your humor";
+GALLERY_CAPTIONS[27] = "Your smile";
+GALLERY_CAPTIONS[28] = "Your confidence";
+GALLERY_CAPTIONS[29] = "Your uniqueness";
+GALLERY_CAPTIONS[30] = "Your clinginess";
+GALLERY_CAPTIONS[31] = "Your curiosity";
+GALLERY_CAPTIONS[32] = "You're genuine";
+GALLERY_CAPTIONS[33] = "You inspire me";
+GALLERY_CAPTIONS[34] = "You motivate me indirectly";
+GALLERY_CAPTIONS[35] = "Your attention to details";
+GALLERY_CAPTIONS[36] = "You're adorable";
+GALLERY_CAPTIONS[37] = "Your touch";
+GALLERY_CAPTIONS[38] = "Your consistency";
+GALLERY_CAPTIONS[39] = "Your personality";
+GALLERY_CAPTIONS[40] = "You're bright";
+GALLERY_CAPTIONS[41] = "You check on me";
+GALLERY_CAPTIONS[42] = "You're dazzling";
+GALLERY_CAPTIONS[43] = "You're glorious";
+GALLERY_CAPTIONS[44] = "Your reactions";
+GALLERY_CAPTIONS[45] = "Your warmth";
+GALLERY_CAPTIONS[46] = "You're lucid";
+GALLERY_CAPTIONS[47] = "I love you";
+GALLERY_CAPTIONS[48] = "You're bold";
+GALLERY_CAPTIONS[49] = "You're noble";
+GALLERY_CAPTIONS[50] = "Your rarity";
+GALLERY_CAPTIONS[51] = "You trust me";
+GALLERY_CAPTIONS[52] = "You improve my mindset";
+GALLERY_CAPTIONS[53] = "Your reliability";
+GALLERY_CAPTIONS[54] = "Your way of thinking";
+const GALLERY_CAPTION_STORAGE_KEY = "ilmonthsary.galleryCaptions";
+const GALLERY_CAPTIONS_EDITABLE = false;
+// TODO: remove temp gallery pan when the gallery section is finished
+const GALLERY_TOP_SPACE = 88;
+const GALLERY_GAP = 15;
+const GALLERY_SIZE_SCALE = 1;
+const GLASS_BRICK_MIN_W = GALLERY_GAP;
+const GLASS_BRICK_MIN_H = GALLERY_GAP;
+const GALLERY_REMOVED_GLASS_LABELS = new Set([
+    "H",
+    "C",
+    "S",
+    "F",
+    "G",
+    "R",
+    "K",
+    "E",
+    "O",
+]);
+const GALLERY_FILLER_ART_DIR = "images";
+const GALLERY_MANUAL_GLASS_GAPS = [
+    [29, 5],
+    [30, 12],
+    [32, 14],
+    [44, 41],
+    [50, 45],
+    [18, 53],
+    [35, 38],
+    [53, 47],
+];
+const TEMP_GALLERY_PAN = true;
+let galleryRowCount = 3;
+let measuredGalleryWidth = null;
+let galleryRelayoutRaf = null;
+let galleryPhotoScale = 1;
+let galleryImagesPending = 0;
+let galleryLayoutReady = false;
+
+let appViewport = null;
+
+function loadSavedGalleryCaptions() {
+    if (!GALLERY_CAPTIONS_EDITABLE) return;
+
+    try {
+        const saved = JSON.parse(
+            localStorage.getItem(GALLERY_CAPTION_STORAGE_KEY) || "{}"
+        );
+
+        Object.entries(saved).forEach(([key, value]) => {
+            const cardIndex = parseInt(key, 10);
+            if (
+                Number.isInteger(cardIndex) &&
+                cardIndex >= 0 &&
+                cardIndex < GALLERY_CARD_COUNT &&
+                typeof value === "string"
+            ) {
+                GALLERY_CAPTIONS[cardIndex] = value;
+            }
+        });
+    } catch (error) {
+        console.warn("Could not load saved gallery captions.", error);
+    }
+}
+
+function saveGalleryCaption(cardIndex, text) {
+    if (!GALLERY_CAPTIONS_EDITABLE) return;
+
+    try {
+        const saved = JSON.parse(
+            localStorage.getItem(GALLERY_CAPTION_STORAGE_KEY) || "{}"
+        );
+        const trimmed = text.trim();
+
+        if (trimmed) {
+            saved[String(cardIndex)] = trimmed;
+        } else {
+            delete saved[String(cardIndex)];
+        }
+
+        localStorage.setItem(GALLERY_CAPTION_STORAGE_KEY, JSON.stringify(saved));
+    } catch (error) {
+        console.warn("Could not save gallery caption.", error);
+    }
+}
+
+function getGalleryCaptionText(card, cardIndex) {
+    const captionEl = card.querySelector(".memory-card-caption");
+
+    return (
+        GALLERY_CAPTIONS[cardIndex] ||
+        captionEl?.textContent ||
+        ""
+    ).trim();
+}
+
+function bindGalleryCaptionInput(card, caption, cardIndex) {
+    const commitCaption = () => {
+        const text = caption.textContent.trim();
+        GALLERY_CAPTIONS[cardIndex] = text;
+        saveGalleryCaption(cardIndex, text);
+        card.classList.toggle("has-caption", Boolean(text));
+        updateGalleryMarkupLabels();
+
+        if (!text) {
+            caption.innerHTML = "";
+        }
+    };
+
+    caption.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            commitCaption();
+            caption.blur();
+        }
+    });
+
+    caption.addEventListener("blur", commitCaption);
+    caption.addEventListener("paste", (e) => {
+        e.preventDefault();
+        const text = (e.clipboardData?.getData("text") || "")
+            .replace(/\s+/g, " ")
+            .trim();
+        if (!text) return;
+
+        document.execCommand("insertText", false, text);
+    });
+    caption.addEventListener("pointerdown", (e) => {
+        e.stopPropagation();
+        caption.focus();
+    });
+}
+
+function collectGalleryCaptions() {
+    const captions = GALLERY_CAPTIONS.slice();
+
+    document.querySelectorAll(".memory-card").forEach((card) => {
+        const cardIndex = parseInt(card.dataset.cardIndex || "0", 10);
+        if (!Number.isInteger(cardIndex) || cardIndex < 0 || cardIndex >= GALLERY_CARD_COUNT) {
+            return;
+        }
+
+        const text = getGalleryCaptionText(card, cardIndex);
+        captions[cardIndex] = text;
+    });
+
+    return captions;
+}
+
+function exportGalleryCaptionsForBake() {
+    const assignments = collectGalleryCaptions()
+        .map((text, cardIndex) => {
+            const trimmed = text.trim();
+            return trimmed
+                ? `GALLERY_CAPTIONS[${cardIndex}] = ${JSON.stringify(trimmed)};`
+                : "";
+        })
+        .filter(Boolean)
+        .join("\n");
+
+    const message =
+        "Paste below into index.html after the GALLERY_CAPTIONS declaration.\n" +
+        "Then set GALLERY_CAPTIONS_EDITABLE = false and reload.\n\n" +
+        (assignments || "(no captions saved yet)");
+
+    console.log(message);
+
+    if (assignments && navigator.clipboard?.writeText) {
+        navigator.clipboard.writeText(assignments).then(
+            () => console.log("Copied caption lines to clipboard."),
+            () => {}
+        );
+    }
+
+    return assignments;
+}
+
+window.exportGalleryCaptionsForBake = exportGalleryCaptionsForBake;
+
+loadSavedGalleryCaptions();
+
+function getGalleryRowCount() {
+    const vh = getAppViewport().height;
+    const usable = vh - GALLERY_TOP_SPACE - 24;
+    const unitH = 112 + 52;
+    return usable >= unitH * 3 + GALLERY_GAP * 2 ? 3 : 2;
+}
+
+function getGalleryLayoutMetrics() {
+    const rowCount = getGalleryRowCount();
+    const vh = getAppViewport().height;
+    const padBottom = 24;
+    const rowGap = GALLERY_GAP * (rowCount - 1);
+    const captionBlock = 52;
+    const available = vh - GALLERY_TOP_SPACE - padBottom - rowGap;
+    const rowPhotoBudget = available / rowCount - captionBlock;
+
+    return {
+        rowCount,
+        rowPhotoBudget,
+    };
+}
+
+function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+}
+
+function getGalleryPhotoHeight() {
+    const { rowPhotoBudget } = getGalleryLayoutMetrics();
+    return clamp(rowPhotoBudget * GALLERY_SIZE_SCALE, 82, 168) * galleryPhotoScale;
+}
+
+function getGalleryCardWidth() {
+    const { width } = getAppViewport();
+    return Math.min(210, Math.max(148, width * 0.17));
+}
+
+function getEstimatedGalleryWidth() {
+    const rowCount = getGalleryRowCount();
+    const cardsPerRow = Math.ceil(GALLERY_CARD_COUNT / rowCount);
+    const cardW = getMemoryCardMaxWidth();
+    const sidePad = Math.max(32, getAppViewport().width * 0.04);
+    return sidePad * 2 + cardsPerRow * (cardW + GALLERY_GAP) + 96;
+}
+
+function getGalleryWidth() {
+    return measuredGalleryWidth || getEstimatedGalleryWidth();
+}
+
+function gallerySeed(index) {
+    return ((index * 7919 + 104729) % 1000) / 1000;
+}
+
+function sortGalleryCardsByIndex(cards) {
+    return cards.slice().sort((a, b) => {
+        const aIndex = parseInt(a.dataset.cardIndex || "0", 10);
+        const bIndex = parseInt(b.dataset.cardIndex || "0", 10);
+        return aIndex - bIndex;
+    });
+}
+
+function pickGalleryPlacement(valid) {
+    if (!valid.length) return null;
+
+    return valid.reduce((best, slot) => {
+        if (!best) return slot;
+        if (slot.top > best.top + 0.5) return slot;
+        if (Math.abs(slot.top - best.top) <= 0.5 && slot.left < best.left) {
+            return slot;
+        }
+        return best;
+    }, null);
+}
+
+function galleryRectsOverlap(left, top, right, bottom, placed) {
+    for (const slot of placed) {
+        const hSeparated =
+            right + GALLERY_GAP <= slot.left + 0.5 ||
+            left >= slot.right + GALLERY_GAP - 0.5;
+        const vSeparated =
+            bottom + GALLERY_GAP <= slot.top + 0.5 ||
+            top >= slot.bottom + GALLERY_GAP - 0.5;
+
+        if (!hSeparated && !vSeparated) return true;
+    }
+
+    return false;
+}
+
+function galleryTopForSpan(left, right, cardH, placed, floorBottom) {
+    let surfaceTop = Infinity;
+
+    for (const slot of placed) {
+        if (left < slot.right - 0.5 && right > slot.left + 0.5) {
+            surfaceTop = Math.min(surfaceTop, slot.top);
+        }
+    }
+
+    if (!Number.isFinite(surfaceTop)) {
+        return floorBottom - cardH;
+    }
+
+    return surfaceTop - GALLERY_GAP - cardH;
+}
+
+function getSnappedXCandidates(placed, sidePad, brickOffset = 0) {
+    const xs = new Set([sidePad]);
+
+    if (brickOffset > 0) {
+        xs.add(sidePad + brickOffset);
+    }
+
+    placed.forEach((slot) => {
+        xs.add(slot.right + GALLERY_GAP);
+    });
+
+    return [...xs].sort((a, b) => a - b);
+}
+
+function getGalleryBrickOffset() {
+    return Math.round((getMemoryCardMaxWidth() + GALLERY_GAP) / 2);
+}
+
+function assignGalleryLayers(cards, layerCount) {
+    const layers = Array.from({ length: layerCount }, () => []);
+
+    sortGalleryCardsByIndex(cards).forEach((card, index) => {
+        layers[index % layerCount].push(card);
+    });
+
+    return layers;
+}
+
+function galleryHasSupportBelow(left, right, placed) {
+    return placed.some(
+        (slot) => left < slot.right - 0.5 && right > slot.left + 0.5
+    );
+}
+
+function galleryRectViolatesGap(left, top, right, bottom, obstacles) {
+    return obstacles.some(
+        (slot) =>
+            left < slot.right + GALLERY_GAP - 0.5 &&
+            right > slot.left - GALLERY_GAP + 0.5 &&
+            top < slot.bottom + GALLERY_GAP - 0.5 &&
+            bottom > slot.top - GALLERY_GAP + 0.5
+    );
+}
+
+function gallerySlotFromRect(rect) {
+    return {
+        left: rect.left,
+        top: rect.top,
+        right: rect.left + rect.width,
+        bottom: rect.top + rect.height,
+    };
+}
+
+function mergeGalleryFreeCells(free, xs, ys, minW, minH) {
+    const rows = free.length;
+    const cols = free[0]?.length || 0;
+    const used = Array.from({ length: rows }, () => Array(cols).fill(false));
+    const rects = [];
+
+    for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+            if (!free[row][col] || used[row][col]) continue;
+
+            let colEnd = col;
+            while (
+                colEnd + 1 < cols &&
+                free[row][colEnd + 1] &&
+                !used[row][colEnd + 1]
+            ) {
+                colEnd++;
+            }
+
+            let rowEnd = row;
+            while (rowEnd + 1 < rows) {
+                let rowFull = true;
+                for (let c = col; c <= colEnd; c++) {
+                    if (!free[rowEnd + 1][c] || used[rowEnd + 1][c]) {
+                        rowFull = false;
+                        break;
+                    }
+                }
+                if (!rowFull) break;
+                rowEnd++;
+            }
+
+            for (let r = row; r <= rowEnd; r++) {
+                for (let c = col; c <= colEnd; c++) {
+                    used[r][c] = true;
+                }
+            }
+
+            const left = xs[col];
+            const right = xs[colEnd + 1];
+            const top = ys[row];
+            const bottom = ys[rowEnd + 1];
+            const w = right - left;
+            const h = bottom - top;
+
+            if (w >= minW && h >= minH) {
+                rects.push({ left, top, width: w, height: h });
+            }
+        }
+    }
+
+    return rects;
+}
+
+function mergeGalleryFreeCellsHorizontalOnly(free, xs, ys, minW, minH) {
+    const rows = free.length;
+    const cols = free[0]?.length || 0;
+    const used = Array.from({ length: rows }, () => Array(cols).fill(false));
+    const rects = [];
+
+    for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+            if (!free[row][col] || used[row][col]) continue;
+
+            let colEnd = col;
+            while (
+                colEnd + 1 < cols &&
+                free[row][colEnd + 1] &&
+                !used[row][colEnd + 1]
+            ) {
+                colEnd++;
+            }
+
+            for (let c = col; c <= colEnd; c++) {
+                used[row][c] = true;
+            }
+
+            const left = xs[col];
+            const right = xs[colEnd + 1];
+            const top = ys[row];
+            const bottom = ys[row + 1];
+            const w = right - left;
+            const h = bottom - top;
+
+            if (w >= minW && h >= minH) {
+                rects.push({ left, top, width: w, height: h });
+            }
+        }
+    }
+
+    return rects;
+}
+
+function collectGlassBrickGridCells(free, xs, ys, minW, minH) {
+    const rects = [];
+    const rows = free.length;
+    const cols = free[0]?.length || 0;
+
+    for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+            if (!free[row][col]) continue;
+
+            const left = xs[col];
+            const right = xs[col + 1];
+            const top = ys[row];
+            const bottom = ys[row + 1];
+            const w = right - left;
+            const h = bottom - top;
+
+            if (w >= minW && h >= minH) {
+                rects.push({ left, top, width: w, height: h });
+            }
+        }
+    }
+
+    return rects;
+}
+
+function uniqueGlassBrickRects(rects) {
+    const seen = new Set();
+
+    return rects.filter((rect) => {
+        const key = `${rect.left}|${rect.top}|${rect.width}|${rect.height}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+}
+
+function tryMergeGlassBrickPair(a, b) {
+    const aRight = a.left + a.width;
+    const aBottom = a.top + a.height;
+    const bRight = b.left + b.width;
+    const bBottom = b.top + b.height;
+
+    const sameColumn =
+        Math.abs(a.left - b.left) < 0.5 && Math.abs(a.width - b.width) < 0.5;
+    const sameRow =
+        Math.abs(a.top - b.top) < 0.5 && Math.abs(a.height - b.height) < 0.5;
+
+    if (sameColumn && Math.abs(aBottom - b.top) < 0.5) {
+        return {
+            left: a.left,
+            top: a.top,
+            width: a.width,
+            height: bBottom - a.top,
+        };
+    }
+
+    if (sameColumn && Math.abs(bBottom - a.top) < 0.5) {
+        return {
+            left: a.left,
+            top: b.top,
+            width: a.width,
+            height: aBottom - b.top,
+        };
+    }
+
+    if (sameRow && Math.abs(aRight - b.left) < 0.5) {
+        return {
+            left: a.left,
+            top: a.top,
+            width: bRight - a.left,
+            height: a.height,
+        };
+    }
+
+    if (sameRow && Math.abs(bRight - a.left) < 0.5) {
+        return {
+            left: b.left,
+            top: a.top,
+            width: aRight - b.left,
+            height: a.height,
+        };
+    }
+
+    return null;
+}
+
+function mergeTouchingGlassBricks(rects) {
+    let list = rects.slice();
+    let changed = true;
+
+    while (changed) {
+        changed = false;
+
+        for (let i = 0; i < list.length; i++) {
+            for (let j = i + 1; j < list.length; j++) {
+                const combined = tryMergeGlassBrickPair(list[i], list[j]);
+                if (!combined) continue;
+
+                list[i] = combined;
+                list.splice(j, 1);
+                changed = true;
+                break;
+            }
+
+            if (changed) break;
+        }
+    }
+
+    return list;
+}
+
+function getGalleryTopRowCeiling(placed, layerCount) {
+    const topLayer = layerCount - 1;
+    const topSlots = placed.filter((slot) => slot.layerIndex === topLayer);
+
+    if (!topSlots.length) return Infinity;
+    return Math.min(...topSlots.map((slot) => slot.top));
+}
+
+function getGalleryTopRowBandBottom(placed, layerCount) {
+    const topLayer = layerCount - 1;
+    const topSlots = placed.filter((slot) => slot.layerIndex === topLayer);
+
+    if (!topSlots.length) return getGalleryTopRowCeiling(placed, layerCount);
+    return Math.max(...topSlots.map((slot) => slot.bottom));
+}
+
+function fillerInTopRowBand(rect, placed, layerCount) {
+    const ceiling = getGalleryTopRowCeiling(placed, layerCount);
+    const bandBottom = getGalleryTopRowBandBottom(placed, layerCount);
+    const rectBottom = rect.top + rect.height;
+
+    return rect.top < bandBottom - 0.5 && rectBottom > ceiling - 0.5;
+}
+
+function clipGlassBrickRect(rect, placed, topPad, layerCount) {
+    const topRowCeiling = getGalleryTopRowCeiling(placed, layerCount);
+    const next = { ...rect };
+
+    if (next.top < topRowCeiling - 0.5) {
+        return null;
+    }
+
+    if (next.width < GLASS_BRICK_MIN_W || next.height < GLASS_BRICK_MIN_H) {
+        return null;
+    }
+
+    if (fillerInTopRowBand(next, placed, layerCount) && next.width <= next.height + 0.5) {
+        return null;
+    }
+
+    return next;
+}
+
+function buildGlassBrickCandidates(
+    obstacles,
+    sidePad,
+    topPad,
+    floorBottom,
+    maxRight,
+    cardPlaced,
+    layerCount
+) {
+    const topRowCeiling = getGalleryTopRowCeiling(cardPlaced, layerCount);
+    const xSet = new Set([sidePad, maxRight]);
+    const ySet = new Set([topPad, floorBottom]);
+
+    obstacles.forEach((slot) => {
+        xSet.add(slot.left);
+        xSet.add(slot.right);
+        xSet.add(clamp(slot.left - GALLERY_GAP, sidePad, maxRight));
+        xSet.add(clamp(slot.right + GALLERY_GAP, sidePad, maxRight));
+        ySet.add(slot.top);
+        ySet.add(slot.bottom);
+        ySet.add(clamp(slot.top - GALLERY_GAP, topPad, floorBottom));
+        ySet.add(clamp(slot.bottom + GALLERY_GAP, topPad, floorBottom));
+    });
+
+    if (Number.isFinite(topRowCeiling)) {
+        ySet.add(topRowCeiling);
+        ySet.add(clamp(topRowCeiling - GALLERY_GAP, topPad, floorBottom));
+    }
+
+    const xs = [...xSet].sort((a, b) => a - b);
+    const ys = [...ySet].sort((a, b) => a - b);
+    const cols = xs.length - 1;
+    const rows = ys.length - 1;
+
+    if (cols <= 0 || rows <= 0) return [];
+
+    const free = Array.from({ length: rows }, () => Array(cols).fill(false));
+
+    for (let row = 0; row < rows; row++) {
+        const bandTop = ys[row];
+        const bandBottom = ys[row + 1];
+
+        for (let col = 0; col < cols; col++) {
+            if (bandBottom <= topRowCeiling + 0.5) {
+                free[row][col] = false;
+                continue;
+            }
+
+            const left = xs[col];
+            const right = xs[col + 1];
+            free[row][col] = !galleryRectViolatesGap(
+                left,
+                bandTop,
+                right,
+                bandBottom,
+                obstacles
+            );
+        }
+    }
+
+    const merged = mergeGalleryFreeCells(
+        free,
+        xs,
+        ys,
+        GLASS_BRICK_MIN_W,
+        GLASS_BRICK_MIN_H
+    );
+    const rowBands = mergeGalleryFreeCellsHorizontalOnly(
+        free,
+        xs,
+        ys,
+        GLASS_BRICK_MIN_W,
+        GLASS_BRICK_MIN_H
+    );
+    const gridCells = collectGlassBrickGridCells(
+        free,
+        xs,
+        ys,
+        GLASS_BRICK_MIN_W,
+        GLASS_BRICK_MIN_H
+    );
+
+    return uniqueGlassBrickRects(
+        mergeTouchingGlassBricks([...merged, ...rowBands, ...gridCells])
+    )
+        .map((rect) => clipGlassBrickRect(rect, cardPlaced, topPad, layerCount))
+        .filter(Boolean)
+        .sort((a, b) => b.width * b.height - a.width * a.height);
+}
+
+function findGalleryGlassBrickRects(
+    placed,
+    sidePad,
+    topPad,
+    floorBottom,
+    maxRight,
+    layerCount
+) {
+    const cardPlaced = placed.map((slot) => ({ ...slot }));
+    const obstacles = cardPlaced.map((slot) => ({ ...slot }));
+    const bricks = [];
+    const maxPasses = 128;
+
+    for (let pass = 0; pass < maxPasses; pass++) {
+        const candidates = buildGlassBrickCandidates(
+            obstacles,
+            sidePad,
+            topPad,
+            floorBottom,
+            maxRight,
+            cardPlaced,
+            layerCount
+        );
+
+        let placedAny = false;
+
+        for (const rect of candidates) {
+            const slot = gallerySlotFromRect(rect);
+            if (
+                galleryRectViolatesGap(
+                    slot.left,
+                    slot.top,
+                    slot.right,
+                    slot.bottom,
+                    obstacles
+                )
+            ) {
+                continue;
+            }
+
+            bricks.push(rect);
+            obstacles.push(slot);
+            placedAny = true;
+        }
+
+        if (!placedAny) break;
+    }
+
+    return bricks;
+}
+
+function getPlacedCardByPhoto(placed, photoNumber) {
+    return placed.find((slot) => slot.cardIndex === photoNumber - 1) || null;
+}
+
+function computeGapRectBetweenCards(slotA, slotB, obstacles) {
+    if (!slotA || !slotB) return null;
+
+    const otherObstacles = obstacles.filter(
+        (slot) =>
+            slot.cardIndex !== slotA.cardIndex &&
+            slot.cardIndex !== slotB.cardIndex
+    );
+    const attempts = [];
+    const leftSlot = slotA.left <= slotB.left ? slotA : slotB;
+    const rightSlot = leftSlot === slotA ? slotB : slotA;
+    const shortSlot = slotA.bottom < slotB.bottom ? slotA : slotB;
+    const tallSlot = shortSlot === slotA ? slotB : slotA;
+
+    if (shortSlot !== tallSlot && tallSlot.top + GALLERY_GAP < shortSlot.top) {
+        attempts.push({
+            left: shortSlot.left,
+            top: shortSlot.top,
+            width: shortSlot.right - shortSlot.left,
+            height: tallSlot.top - GALLERY_GAP - shortSlot.top,
+        });
+    }
+
+    if (rightSlot.left >= leftSlot.right + GALLERY_GAP) {
+        const overlapTop = Math.max(leftSlot.top, rightSlot.top);
+        const overlapBottom = Math.min(leftSlot.bottom, rightSlot.bottom);
+
+        if (overlapBottom > overlapTop) {
+            attempts.push({
+                left: leftSlot.right + GALLERY_GAP,
+                top: overlapTop,
+                width: rightSlot.left - leftSlot.right - GALLERY_GAP * 2,
+                height: overlapBottom - overlapTop,
+            });
+        }
+
+        attempts.push({
+            left: leftSlot.right + GALLERY_GAP,
+            top: Math.min(leftSlot.top, rightSlot.top),
+            width: rightSlot.left - leftSlot.right - GALLERY_GAP * 2,
+            height:
+                Math.max(leftSlot.bottom, rightSlot.bottom) -
+                Math.min(leftSlot.top, rightSlot.top),
+        });
+    }
+
+    const topSlot = slotA.top <= slotB.top ? slotA : slotB;
+    const bottomSlot = topSlot === slotA ? slotB : slotA;
+
+    if (bottomSlot.top >= topSlot.bottom + GALLERY_GAP) {
+        attempts.push({
+            left: Math.min(topSlot.left, bottomSlot.left),
+            top: topSlot.bottom + GALLERY_GAP,
+            width:
+                Math.max(topSlot.right, bottomSlot.right) -
+                Math.min(topSlot.left, bottomSlot.left),
+            height: bottomSlot.top - topSlot.bottom - GALLERY_GAP * 2,
+        });
+    }
+
+    const valid = attempts.filter(
+        (rect) => rect.width >= GLASS_BRICK_MIN_W && rect.height >= GLASS_BRICK_MIN_H
+    );
+
+    valid.sort((a, b) => b.width * b.height - a.width * a.height);
+
+    for (const rect of valid) {
+        const slot = gallerySlotFromRect(rect);
+        if (
+            !galleryRectViolatesGap(
+                slot.left,
+                slot.top,
+                slot.right,
+                slot.bottom,
+                otherObstacles
+            )
+        ) {
+            return rect;
+        }
+    }
+
+    return null;
+}
+
+function extrudeGlassBrickRectToFloor(rect, obstacles, floorBottom) {
+    const top = rect.top;
+    const left = rect.left;
+    const right = rect.left + rect.width;
+    const currentBottom = top + rect.height;
+
+    if (currentBottom >= floorBottom - 0.5) return rect;
+
+    let maxBottom = floorBottom;
+
+    obstacles.forEach((slot) => {
+        if (left >= slot.right + GALLERY_GAP - 0.5) return;
+        if (right <= slot.left - GALLERY_GAP + 0.5) return;
+        if (slot.top <= top + 0.5) return;
+
+        maxBottom = Math.min(maxBottom, slot.top - GALLERY_GAP);
+    });
+
+    const height = maxBottom - top;
+    if (height < GLASS_BRICK_MIN_H || height <= rect.height + 0.5) return rect;
+
+    return { ...rect, height };
+}
+
+function findManualGalleryGlassBrickRects(placed, obstacles) {
+    const rects = [];
+
+    GALLERY_MANUAL_GLASS_GAPS.forEach(([photoA, photoB]) => {
+        const slotA = getPlacedCardByPhoto(placed, photoA);
+        const slotB = getPlacedCardByPhoto(placed, photoB);
+        const rect = computeGapRectBetweenCards(slotA, slotB, obstacles);
+
+        if (!rect) return;
+
+        rects.push({
+            ...rect,
+            manualKey: `${photoA}-${photoB}`,
+        });
+    });
+
+    return rects;
+}
+
+function layoutGalleryGlassBricks(
+    placed,
+    sidePad,
+    topPad,
+    floorBottom,
+    maxRight,
+    layerCount
+) {
+    const inner = document.querySelector(".memory-gallery-inner");
+    if (!inner) return;
+
+    inner.querySelectorAll(".memory-gallery-glass-brick").forEach((el) => el.remove());
+
+    const cardPlaced = placed.map((slot) => ({ ...slot }));
+    const obstacles = cardPlaced.map((slot) => ({ ...slot }));
+    const autoRects = findGalleryGlassBrickRects(
+        cardPlaced,
+        sidePad,
+        topPad,
+        floorBottom,
+        maxRight,
+        layerCount
+    );
+    let labelIndex = 0;
+
+    const mountBrick = (rect, extra = {}) => {
+        const extruded = extrudeGlassBrickRectToFloor(rect, obstacles, floorBottom);
+        const label = galleryMarkerLetter(labelIndex);
+        labelIndex += 1;
+
+        const brick = document.createElement("div");
+        brick.className = "memory-gallery-glass-brick";
+        brick.setAttribute("aria-hidden", "true");
+        brick.dataset.glassLabel = label;
+
+        if (extra.manualKey) {
+            brick.dataset.manualGap = extra.manualKey;
+        }
+
+        brick.dataset.brickW = String(Math.round(extruded.width));
+        brick.dataset.brickH = String(Math.round(extruded.height));
+
+        brick.style.left = `${extruded.left}px`;
+        brick.style.top = `${extruded.top}px`;
+        brick.style.width = `${extruded.width}px`;
+        brick.style.height = `${extruded.height}px`;
+
+        const img = document.createElement("img");
+        img.className = "memory-gallery-filler-art";
+        img.alt = "";
+        img.decoding = "async";
+        img.draggable = false;
+
+        const applyFillerArt = () => {
+            brick.classList.add("has-filler-art");
+        };
+
+        img.addEventListener("load", applyFillerArt);
+        img.addEventListener("error", () => img.remove());
+        img.src = galleryFillerArtSrc(label);
+        brick.appendChild(img);
+
+        if (img.complete) {
+            if (img.naturalWidth > 0) {
+                applyFillerArt();
+            } else {
+                img.remove();
+            }
+        }
+
+        inner.appendChild(brick);
+        obstacles.push(gallerySlotFromRect(extruded));
+    };
+
+    autoRects.forEach((rect) => {
+        const label = galleryMarkerLetter(labelIndex);
+        if (GALLERY_REMOVED_GLASS_LABELS.has(label)) {
+            labelIndex += 1;
+            return;
+        }
+
+        mountBrick(rect);
+    });
+
+    findManualGalleryGlassBrickRects(cardPlaced, obstacles).forEach((rect) => {
+        const slot = gallerySlotFromRect(rect);
+        if (
+            galleryRectViolatesGap(
+                slot.left,
+                slot.top,
+                slot.right,
+                slot.bottom,
+                obstacles
+            )
+        ) {
+            return;
+        }
+
+        mountBrick(rect, { manualKey: rect.manualKey });
+    });
+
+    updateGalleryMarkupLabels();
+}
+
+function galleryFillerArtSrc(label) {
+    return `${GALLERY_FILLER_ART_DIR}/filler${label}.png`;
+}
+
+function galleryMarkerLetter(index) {
+    let n = index;
+    let label = "";
+
+    do {
+        label = String.fromCharCode(65 + (n % 26)) + label;
+        n = Math.floor(n / 26) - 1;
+    } while (n >= 0);
+
+    return label;
+}
+
+function ensureGalleryMarker(host, variantClass) {
+    if (!host) return null;
+
+    let marker = host.querySelector(".memory-gallery-marker");
+    if (!marker) {
+        marker = document.createElement("span");
+        marker.className = `memory-gallery-marker ${variantClass}`;
+        host.appendChild(marker);
+    }
+
+    marker.className = `memory-gallery-marker ${variantClass}`;
+    return marker;
+}
+
+function ensureGalleryDimension(host) {
+    if (!host) return null;
+
+    let dim = host.querySelector(".memory-gallery-marker-dim");
+    if (!dim) {
+        dim = document.createElement("span");
+        dim.className = "memory-gallery-marker-dim";
+        host.appendChild(dim);
+    }
+
+    return dim;
+}
+
+function formatGalleryBrickSize(width, height) {
+    return `${Math.round(width)} × ${Math.round(height)}`;
+}
+
+function updateGalleryMarkupLabels() {
+    const inner = document.querySelector(".memory-gallery-inner");
+    if (!inner) return;
+
+    sortGalleryCardsByIndex([...inner.querySelectorAll(".memory-card")]).forEach(
+        (card) => {
+            const cardIndex = parseInt(card.dataset.cardIndex || "0", 10);
+            const captionText = getGalleryCaptionText(card, cardIndex);
+            card.classList.toggle("has-caption", Boolean(captionText));
+
+            const marker = ensureGalleryMarker(
+                card.querySelector(".memory-card-photo-wrap"),
+                "is-photo"
+            );
+            if (marker) marker.textContent = String(cardIndex + 1);
+        }
+    );
+
+    [...inner.querySelectorAll(".memory-gallery-glass-brick")].forEach(
+        (brick, index) => {
+            const label = brick.dataset.glassLabel || galleryMarkerLetter(index);
+            const marker = ensureGalleryMarker(brick, "is-glass");
+            const width = parseFloat(brick.dataset.brickW) || brick.offsetWidth;
+            const height = parseFloat(brick.dataset.brickH) || brick.offsetHeight;
+            const dim = ensureGalleryDimension(brick);
+
+            if (marker) marker.textContent = label;
+            if (dim) dim.textContent = formatGalleryBrickSize(width, height);
+        }
+    );
+}
+
+function layoutMemoryGalleryMasonry() {
+    const inner = document.querySelector(".memory-gallery-inner");
+    if (!inner) return;
+
+    const cards = sortGalleryCardsByIndex(
+        [...inner.querySelectorAll(".memory-card")]
+    );
+    if (!cards.length) return;
+
+    const layerCount = getGalleryRowCount();
+    const sidePad = parseFloat(getComputedStyle(inner).paddingLeft) || 32;
+    const topPad = GALLERY_TOP_SPACE;
+    const floorBottom = getAppViewport().height - 24;
+    const placed = [];
+    const layers = assignGalleryLayers(cards, layerCount);
+    let maxRight = sidePad;
+
+    // Bottom layer: exact 15px horizontal gaps, shared bottom edge.
+    let cursorX = sidePad;
+    sortGalleryCardsByIndex(layers[0]).forEach((card) => {
+        const w = card.offsetWidth;
+        const h = card.offsetHeight;
+        if (w <= 0 || h <= 0) return;
+
+        const left = cursorX;
+        const top = floorBottom - h;
+
+        const cardIndex = parseInt(card.dataset.cardIndex || "0", 10);
+
+        card.style.left = `${left}px`;
+        card.style.top = `${top}px`;
+
+        placed.push({
+            left,
+            top,
+            right: left + w,
+            bottom: top + h,
+            layerIndex: 0,
+            cardIndex,
+        });
+
+        cursorX = left + w + GALLERY_GAP;
+        maxRight = Math.max(maxRight, left + w);
+    });
+
+    // Upper layers: snap to 15px grid, nest 15px above irregular skyline below.
+    for (let layerIndex = 1; layerIndex < layerCount; layerIndex++) {
+        const brickOffset = layerIndex % 2 === 1 ? getGalleryBrickOffset() : 0;
+
+        sortGalleryCardsByIndex(layers[layerIndex]).forEach((card) => {
+            const w = card.offsetWidth;
+            const h = card.offsetHeight;
+            if (w <= 0 || h <= 0) return;
+
+            const xCandidates = getSnappedXCandidates(placed, sidePad, brickOffset);
+            const valid = [];
+
+            xCandidates.forEach((left) => {
+                if (!galleryHasSupportBelow(left, left + w, placed)) return;
+
+                const top = galleryTopForSpan(left, left + w, h, placed, floorBottom);
+                if (top < topPad - 0.5) return;
+                if (galleryRectsOverlap(left, top, left + w, top + h, placed)) return;
+
+                valid.push({ left, top });
+            });
+
+            let best = null;
+
+            if (valid.length) {
+                best = pickGalleryPlacement(valid);
+            } else {
+                for (const left of xCandidates) {
+                    const top = galleryTopForSpan(left, left + w, h, placed, floorBottom);
+                    if (top < topPad - 0.5) continue;
+                    if (galleryRectsOverlap(left, top, left + w, top + h, placed)) {
+                        continue;
+                    }
+
+                    if (!best || top > best.top) {
+                        best = { left, top };
+                    }
+                }
+            }
+
+            if (!best) {
+                const left = maxRight + GALLERY_GAP;
+                const top = galleryTopForSpan(left, left + w, h, placed, floorBottom);
+                if (
+                    top >= topPad - 0.5 &&
+                    !galleryRectsOverlap(left, top, left + w, top + h, placed)
+                ) {
+                    best = { left, top };
+                }
+            }
+
+            if (!best) return;
+
+            const cardIndex = parseInt(card.dataset.cardIndex || "0", 10);
+
+            card.style.left = `${best.left}px`;
+            card.style.top = `${best.top}px`;
+
+            placed.push({
+                left: best.left,
+                top: best.top,
+                right: best.left + w,
+                bottom: best.top + h,
+                layerIndex: layerIndex,
+                cardIndex,
+            });
+            maxRight = Math.max(maxRight, best.left + w);
+        });
+    }
+
+    inner.style.width = `${Math.ceil(maxRight + sidePad)}px`;
+    layoutGalleryGlassBricks(
+        placed,
+        sidePad,
+        topPad,
+        floorBottom,
+        maxRight,
+        layerCount
+    );
+    updateGalleryMarkupLabels();
+}
+
+function getGalleryCardSizeTier(cardIndex) {
+    const r = gallerySeed(cardIndex + 43);
+    if (r > 0.8) return 1.34;
+    if (r > 0.55) return 1.16;
+    return 1;
+}
+
+function applyGalleryCardSizeTier(card, cardIndex) {
+    card.dataset.heightScale = String(getGalleryCardSizeTier(cardIndex));
+}
+
+function refitGalleryCards() {
+    document.querySelectorAll(".memory-card").forEach((card) => {
+        const img = card.querySelector(".memory-card-photo");
+        const wrap = card.querySelector(".memory-card-photo-wrap");
+        if (img && wrap) fitMemoryCardImage(card, img, wrap);
+    });
+}
+
+function fitGalleryVerticalBounds() {
+    const inner = document.querySelector(".memory-gallery-inner");
+    if (!inner) return;
+
+    const margin = GALLERY_TOP_SPACE;
+    const vh = getAppViewport().height;
+    galleryPhotoScale = 1;
+
+    for (let attempt = 0; attempt < 12; attempt++) {
+        refitGalleryCards();
+        layoutMemoryGalleryMasonry();
+
+        let minTop = Infinity;
+        let maxBottom = -Infinity;
+
+        inner.querySelectorAll(".memory-card").forEach((card) => {
+            const rect = card.getBoundingClientRect();
+            minTop = Math.min(minTop, rect.top);
+            maxBottom = Math.max(maxBottom, rect.bottom);
+        });
+
+        if (!Number.isFinite(minTop)) return;
+        if (minTop >= margin - 1 && maxBottom <= vh - 24 + 1) return;
+
+        const contentH = Math.max(1, maxBottom - minTop);
+        galleryPhotoScale *= clamp((vh - margin - 24) / contentH, 0.82, 0.98);
+    }
+}
+
+function getMemoryCardMaxWidth() {
+    const { width } = getAppViewport();
+    return Math.min(320, width * 0.4);
+}
+
+function getMemoryCardInnerWidth() {
+    return getMemoryCardMaxWidth() - 18;
+}
+
+function fitMemoryCardImage(card, img, photoWrap) {
+    const heightScale = parseFloat(card.dataset.heightScale || "1");
+    let photoH = getGalleryPhotoHeight() * heightScale;
+    const maxPhotoW = getMemoryCardInnerWidth();
+    let photoW;
+
+    if (img.naturalWidth > 0 && img.naturalHeight > 0) {
+        const minPhotoW = photoH * 0.58;
+        const maxAspectW = photoH * 1.62;
+        photoW = photoH * (img.naturalWidth / img.naturalHeight);
+        photoW = Math.min(maxAspectW, Math.max(minPhotoW, photoW));
+    } else {
+        photoW = photoH * 0.78;
+    }
+
+    if (photoW > maxPhotoW) {
+        photoW = maxPhotoW;
+        photoH = photoW / Math.max(
+            0.58,
+            Math.min(
+                1.62,
+                img.naturalWidth > 0 && img.naturalHeight > 0
+                    ? img.naturalWidth / img.naturalHeight
+                    : 0.78
+            )
+        );
+    }
+
+    photoWrap.style.height = `${photoH}px`;
+    photoWrap.style.width = `${photoW}px`;
+    photoWrap.style.maxWidth = `${maxPhotoW}px`;
+    card.style.width = `${photoW + 18}px`;
+    card.dataset.sized = "1";
+}
+
+function remeasureGalleryWidth() {
+    const inner = document.querySelector(".memory-gallery-inner");
+    if (!inner) return;
+
+    measuredGalleryWidth = inner.offsetWidth;
+
+    const worldW = getAppViewport().width + measuredGalleryWidth;
+    const root = document.documentElement;
+    root.style.setProperty("--gallery-w", `${measuredGalleryWidth}px`);
+    root.style.setProperty("--world-w", `${worldW}px`);
+
+    const { height } = getAppViewport();
+    [
+        document.getElementById("garden"),
+        document.getElementById("letterIntro"),
+        document.getElementById("letterCardFlowers"),
+    ].forEach((layer) => {
+        if (!layer) return;
+        layer.setAttribute("width", String(worldW));
+        layer.setAttribute("height", String(height));
+        layer.setAttribute("viewBox", `0 0 ${worldW} ${height}`);
+    });
+
+    if (typeof setScenePanX === "function" && typeof scenePanX === "number") {
+        setScenePanX(scenePanX);
+    }
+}
+
+function scheduleGalleryRelayout() {
+    if (!galleryLayoutReady) return;
+    if (galleryRelayoutRaf) return;
+    galleryRelayoutRaf = requestAnimationFrame(() => {
+        galleryRelayoutRaf = null;
+        fitGalleryVerticalBounds();
+        remeasureGalleryWidth();
+    });
+}
+
+function settleGalleryImage(img) {
+    if (img.dataset.gallerySettled === "1") return;
+    img.dataset.gallerySettled = "1";
+    galleryImagesPending = Math.max(0, galleryImagesPending - 1);
+
+    if (galleryImagesPending === 0) {
+        galleryLayoutReady = true;
+        scheduleGalleryRelayout();
+    }
+}
+
+function bindMemoryCardImage(card, img, photoWrap) {
+    const applySize = () => {
+        fitMemoryCardImage(card, img, photoWrap);
+        scheduleGalleryRelayout();
+    };
+
+    img.addEventListener("load", () => {
+        settleGalleryImage(img);
+        applySize();
+    });
+    img.addEventListener("error", () => {
+        img.removeAttribute("src");
+        photoWrap.style.background =
+            "linear-gradient(145deg, rgba(255,120,200,0.12), rgba(40,30,50,0.35))";
+        settleGalleryImage(img);
+        applySize();
+    });
+
+    fitMemoryCardImage(card, img, photoWrap);
+
+    if (img.complete) {
+        if (img.naturalWidth > 0) {
+            settleGalleryImage(img);
+            applySize();
+        } else {
+            img.removeAttribute("src");
+            photoWrap.style.background =
+                "linear-gradient(145deg, rgba(255,120,200,0.12), rgba(40,30,50,0.35))";
+            settleGalleryImage(img);
+            applySize();
+        }
+    }
+}
+
+function getScenePanMax() {
+    return getGalleryWidth();
+}
+
+function getWorldWidth() {
+    return getAppViewport().width + getGalleryWidth();
+}
+
+function galleryImageSrc(index) {
+    return `images/gallery/photo (${index}).jpeg`;
+}
+
+function mountMemoryGallery() {
+    const host = document.getElementById("memoryGallery");
+    if (!host || host.dataset.ready === "1") return;
+
+    galleryRowCount = getGalleryRowCount();
+    galleryImagesPending = GALLERY_CARD_COUNT;
+    galleryLayoutReady = false;
+
+    const inner = document.createElement("div");
+    inner.className = "memory-gallery-inner";
+
+    const title = document.createElement("h2");
+    title.className = "memory-gallery-title";
+    title.textContent = "55 REASONS I LOVE YOU";
+    host.appendChild(title);
+
+    for (let cardIndex = 0; cardIndex < GALLERY_CARD_COUNT; cardIndex++) {
+        const card = document.createElement("article");
+        card.className = "memory-card";
+        card.dataset.cardIndex = String(cardIndex);
+        applyGalleryCardSizeTier(card, cardIndex);
+
+        const photoWrap = document.createElement("div");
+        photoWrap.className = "memory-card-photo-wrap";
+
+        const img = document.createElement("img");
+        img.className = "memory-card-photo";
+        img.alt = `Reason ${cardIndex + 1}`;
+        img.loading = "lazy";
+        img.decoding = "async";
+        img.src = galleryImageSrc(cardIndex + 1);
+        bindMemoryCardImage(card, img, photoWrap);
+
+        const caption = document.createElement("p");
+        caption.className = "memory-card-caption";
+
+        if (GALLERY_CAPTIONS_EDITABLE) {
+            card.classList.add("is-caption-editable");
+            caption.classList.add("memory-card-caption-input");
+            caption.contentEditable = "true";
+            caption.spellcheck = true;
+            caption.dataset.placeholder = "write here...";
+            caption.textContent = GALLERY_CAPTIONS[cardIndex] || "";
+            bindGalleryCaptionInput(card, caption, cardIndex);
+        } else {
+            caption.textContent = GALLERY_CAPTIONS[cardIndex] || "";
+        }
+
+        if ((GALLERY_CAPTIONS[cardIndex] || "").trim()) {
+            card.classList.add("has-caption");
+        }
+
+        photoWrap.appendChild(img);
+        card.append(photoWrap, caption);
+        inner.appendChild(card);
+    }
+
+    host.appendChild(inner);
+    host.dataset.ready = "1";
+}
+
+function updateWorldLayout() {
+    measuredGalleryWidth = null;
+    galleryPhotoScale = 1;
+
+    const { width, height } = getAppViewport();
+    const galleryW = getGalleryWidth();
+    const worldW = getAppViewport().width + galleryW;
+    const root = document.documentElement;
+
+    root.style.setProperty("--world-w", `${worldW}px`);
+    root.style.setProperty("--gallery-w", `${galleryW}px`);
+    root.style.setProperty("--gallery-top-space", `${GALLERY_TOP_SPACE}px`);
+
+    const layers = [
+        document.getElementById("garden"),
+        document.getElementById("letterIntro"),
+        document.getElementById("letterCardFlowers"),
+    ];
+
+    layers.forEach((layer) => {
+        if (!layer) return;
+        layer.setAttribute("width", String(worldW));
+        layer.setAttribute("height", String(height));
+        layer.setAttribute("viewBox", `0 0 ${worldW} ${height}`);
+    });
+
+    scheduleGalleryRelayout();
+}
+
+function getScreenViewport() {
+    const vv = window.visualViewport;
+    return {
+        width: vv?.width ?? window.innerWidth,
+        height: vv?.height ?? window.innerHeight,
+    };
+}
+
+function updateSceneZoom() {
+    if (!appViewport) return;
+
+    const { height } = getScreenViewport();
+    const zoom = height / appViewport.height;
+    document.documentElement.style.setProperty("--scene-zoom", String(zoom));
+}
+
+function lockAppViewport() {
+    if (appViewport) return appViewport;
+
+    appViewport = {
+        width: window.innerWidth,
+        height: window.innerHeight,
+    };
+
+    const root = document.documentElement;
+    root.style.setProperty("--app-w", `${appViewport.width}px`);
+    root.style.setProperty("--app-h", `${appViewport.height}px`);
+    root.style.setProperty("--scene-zoom", "1");
+    root.classList.add("viewport-locked");
+    updateWorldLayout();
+    updateSceneZoom();
+
+    if (!window.__sceneZoomReady) {
+        window.__sceneZoomReady = true;
+        window.visualViewport?.addEventListener("resize", updateSceneZoom);
+        window.addEventListener("resize", updateSceneZoom);
+    }
+
+    return appViewport;
+}
+
+function getAppViewport() {
+    return appViewport || lockAppViewport();
+}
+
+lockAppViewport();
+mountMemoryGallery();
+enableTempGalleryPan();
+
+function plantAppend(node) {
+    currentPlant.group.appendChild(node);
+}
+
+function plantInsertBefore(node, ref) {
+    currentPlant.group.insertBefore(node, ref);
+}
+
+function plantInsertAfter(node, ref) {
+    if (ref.nextSibling) {
+        currentPlant.group.insertBefore(node, ref.nextSibling);
+    } else {
+        currentPlant.group.appendChild(node);
+    }
+}
+
+function appendToPlant(plant, node) {
+    plant.group.appendChild(node);
+}
+
+function registerSporeLoop(cancel) {
+    currentPlant.sporeCancels.push(cancel);
+}
+
+function wait(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function parseDurationMs(value, fallback = 2200) {
+    const n = parseFloat(String(value || ""));
+    return Number.isFinite(n) && n > 0 ? n : fallback;
+}
+
+function waitForCssAnimation(target, animationName, durationMs) {
+    return new Promise((resolve) => {
+        let settled = false;
+        const done = () => {
+            if (settled) return;
+            settled = true;
+            resolve();
+        };
+
+        if (target) {
+            target.addEventListener("animationend", (e) => {
+                if (animationName && e.animationName !== animationName) return;
+                done();
+            });
+        }
+
+        setTimeout(done, durationMs + 80);
+    });
+}
+
+function forceReflow(el) {
+    if (el instanceof SVGElement) {
+        el.getBBox();
+    } else {
+        void el.offsetWidth;
+    }
+}
+
+function cssRetract(el, className) {
+    const computed = getComputedStyle(el);
+    const transform =
+        computed.transform && computed.transform !== "none"
+            ? computed.transform
+            : className === "retract-bloom-y" || className === "retract-grass"
+              ? "scaleY(1)"
+              : "scale(1)";
+
+    el.style.animation = "none";
+    el.style.transform = transform;
+
+    forceReflow(el);
+    el.classList.add(className);
+}
+
+function parseAnimDelay(el) {
+    const delay = el.style.animationDelay || "";
+    return parseFloat(delay) || 0;
+}
+
+function staggerRetractLeaves(group) {
+    const leaves = Array.from(
+        group.querySelectorAll(".leaf, .heavy-leaf, .larkspur-leaf, .tulip-blade")
+    );
+
+    leaves.sort((a, b) => parseAnimDelay(b) - parseAnimDelay(a));
+
+    let staggerAt = 0;
+
+    return new Promise((resolve) => {
+        if (!leaves.length) {
+            resolve();
+            return;
+        }
+
+        leaves.forEach((el, i) => {
+            const isLarkspur = el.classList.contains("larkspur-leaf");
+            const className = el.classList.contains("tulip-blade")
+                ? "retract-bloom-y"
+                : isLarkspur
+                  ? "retract-larkspur-leaf"
+                  : "retract-leaf";
+            const duration = el.classList.contains("tulip-blade")
+                ? 900
+                : isLarkspur
+                  ? 100
+                  : 650;
+            const stagger = isLarkspur ? 40 : 130;
+            const startAt = staggerAt;
+
+            setTimeout(() => {
+                cssRetract(el, className);
+
+                if (i === leaves.length - 1) {
+                    setTimeout(resolve, duration);
+                }
+            }, startAt);
+
+            staggerAt += stagger;
+        });
+    });
+}
+
+function staggerRetractGrass(group) {
+    const clumps = Array.from(group.querySelectorAll(".grass-clump"));
+    clumps.sort((a, b) => parseAnimDelay(b) - parseAnimDelay(a));
+    const grassDuration = 650;
+    const stagger = 160;
+
+    return new Promise((resolve) => {
+        if (!clumps.length) {
+            resolve();
+            return;
+        }
+
+        clumps.forEach((el, i) => {
+            setTimeout(() => {
+                cssRetract(el, "retract-grass");
+
+                if (i === clumps.length - 1) {
+                    setTimeout(resolve, grassDuration);
+                }
+            }, i * stagger);
+        });
+    });
+}
+
+function stopSway(group) {
+    group.querySelectorAll(
+        ".rose-sway, .desert-sway, .tulip-sway, .larkspur-sway, .daisy-sway"
+    ).forEach((el) => {
+        el.style.animation = "none";
+    });
+}
+
+function animateScaleFromCenter(el, cx, cy, from, to, duration) {
+    return new Promise((resolve) => {
+        const start = performance.now();
+
+        function frame(now) {
+            const t = Math.min(1, (now - start) / duration);
+            const eased = Math.pow(t, 3);
+            const scale = from + (to - from) * eased;
+            el.setAttribute(
+                "transform",
+                `translate(${cx}, ${cy}) scale(${scale}) translate(${-cx}, ${-cy})`
+            );
+            if (t < 1) requestAnimationFrame(frame);
+            else resolve();
+        }
+
+        requestAnimationFrame(frame);
+    });
+}
+
+function fadeSVGElement(el, duration) {
+    return new Promise((resolve) => {
+        if (!el) {
+            resolve();
+            return;
+        }
+
+        const start = performance.now();
+
+        function frame(now) {
+            const t = Math.min(1, (now - start) / duration);
+            el.style.opacity = String(1 - easeInOut(t));
+            if (t < 1) requestAnimationFrame(frame);
+            else resolve();
+        }
+
+        requestAnimationFrame(frame);
+    });
+}
+
+function retractCircle(circle, duration) {
+    return new Promise((resolve) => {
+        const targetR = parseFloat(circle.getAttribute("r")) || 0;
+        const targetRx = parseFloat(circle.getAttribute("rx"));
+        const targetRy = parseFloat(circle.getAttribute("ry"));
+        const start = performance.now();
+
+        function frame(now) {
+            const t = Math.min(1, (now - start) / duration);
+            const eased = Math.pow(t, 3);
+            const scale = 1 - eased;
+
+            if (!Number.isNaN(targetR)) {
+                circle.setAttribute("r", targetR * scale);
+            }
+            if (!Number.isNaN(targetRx)) {
+                circle.setAttribute("rx", targetRx * scale);
+            }
+            if (!Number.isNaN(targetRy)) {
+                circle.setAttribute("ry", targetRy * scale);
+            }
+
+            if (t < 1) requestAnimationFrame(frame);
+            else resolve();
+        }
+
+        requestAnimationFrame(frame);
+    });
+}
+
+function retractStem(path) {
+    return new Promise((resolve) => {
+        const length =
+            parseFloat(path.style.getPropertyValue("--length")) ||
+            path.getTotalLength();
+        const duration = parseDurationMs(path.style.getPropertyValue("--duration"));
+
+        path.style.strokeDasharray = `${length}`;
+        path.style.strokeDashoffset = "0";
+        path.style.animation = "none";
+        path.style.opacity = "1";
+        forceReflow(path);
+
+        const start = performance.now();
+
+        function frame(now) {
+            const t = Math.min(1, (now - start) / duration);
+            path.style.strokeDashoffset = `${easeInOut(t) * length}`;
+            if (t < 1) requestAnimationFrame(frame);
+            else resolve();
+        }
+
+        requestAnimationFrame(frame);
+    });
+}
+
+async function retractCenterBloom(sway, cx, cy) {
+    const jobs = [];
+    const back = sway.children[0];
+
+    if (back) {
+        Array.from(back.children).forEach((petalGroup) => {
+            jobs.push(animateScaleFromCenter(petalGroup, cx, cy, 1, 0, 800));
+        });
+    }
+
+    const front = sway.children[1];
+    const center = front?.querySelector("circle");
+    if (center) {
+        jobs.push(retractCircle(center, 500));
+    }
+
+    await Promise.all(jobs);
+}
+
+async function removePlant(plant) {
+    if (!plant || plant.removing) return;
+
+    plant.removing = true;
+    plant.sporeCancels.forEach((cancel) => cancel());
+
+    const group = plant.group;
+    stopSway(group);
+
+    group.querySelectorAll(".petal, .tulip-petal").forEach((el) => {
+        cssRetract(el, "retract-bloom-y");
+    });
+
+    group.querySelectorAll(".larkspur-bloom").forEach((el) => {
+        cssRetract(el, "retract-bloom");
+    });
+
+    group.querySelectorAll(".rose-sway ellipse").forEach((el) => {
+        retractCircle(el, 500);
+    });
+
+    const centerJobs = [];
+    group.querySelectorAll(".desert-sway").forEach((sway) => {
+        centerJobs.push(
+            retractCenterBloom(sway, DESERT_CENTER.cx, DESERT_CENTER.cy)
+        );
+    });
+    group.querySelectorAll(".daisy-sway").forEach((sway) => {
+        centerJobs.push(
+            retractCenterBloom(sway, DAISY_CENTER.cx, DAISY_CENTER.cy)
+        );
+    });
+
+    await Promise.all([wait(900), ...centerJobs]);
+
+    await staggerRetractLeaves(group);
+
+    const stems = Array.from(group.querySelectorAll(".stem"));
+    await Promise.all(stems.map(retractStem));
+
+    await staggerRetractGrass(group);
+
+    group.remove();
+}
+
+function unregisterPlant(plant) {
+    const index = plantRegistry.indexOf(plant);
+    if (index >= 0) plantRegistry.splice(index, 1);
+}
+
+function cullOffScreenPlants() {
+    if (document.body.dataset.gardenUnlocked !== "1") return;
+
+    const margin = 36;
+    const viewW = getAppViewport().width;
+
+    for (let i = plantRegistry.length - 1; i >= 0; i--) {
+        const plant = plantRegistry[i];
+        if (!plant?.group?.isConnected || plant.removing) continue;
+
+        const rect = plant.group.getBoundingClientRect();
+        const offScreen = rect.right < -margin || rect.left > viewW + margin;
+
+        if (offScreen) {
+            unregisterPlant(plant);
+            void removePlant(plant);
+        }
+    }
+}
+
+let cullPlantsRaf = null;
+
+function scheduleCullOffScreenPlants() {
+    if (cullPlantsRaf) return;
+    cullPlantsRaf = requestAnimationFrame(() => {
+        cullPlantsRaf = null;
+        cullOffScreenPlants();
+    });
+}
+
+function registerPlant(plant) {
+    plantRegistry.push(plant);
+    if (plantRegistry.length > MAX_PLANTS) {
+        void removePlant(plantRegistry.shift());
+    }
+}
+
+function beginPlant(baseX, baseY) {
+    const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    group.classList.add("plant");
+    const plant = {
+        group,
+        sporeCancels: [],
+        baseX,
+        baseY,
+    };
+    svg.appendChild(group);
+    registerPlant(plant);
+    currentPlant = plant;
+}
+
+function endPlant() {
+    currentPlant = null;
+}
+
+function getFlowerScale(defaultScale) {
+    return cardFlowerContext ? defaultScale * cardFlowerContext.scale : defaultScale;
+}
+
+function beginCardPlant(svg, baseX, baseY) {
+    const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    group.classList.add("plant", "card-side-plant");
+    currentPlant = {
+        group,
+        sporeCancels: [],
+        baseX,
+        baseY,
+    };
+    cardFlowerContext = { scale: 1 };
+    svg.appendChild(group);
+}
+
+function endCardPlant() {
+    currentPlant = null;
+    cardFlowerContext = null;
+}
+
+const ROSE_CALYX = {
+    cx: 83,
+    cy: 113,
+    rx: 36,
+    ry: 28,
+    fill: "#dff5e6",
+    opacity: "1",
+};
+
+const ROSE_PATHS = [
+    { d: "M66.0051 48.3C66.0051 61.6874 57.0802 120 80 120C102.92 120 132.005 61.6874 132.005 48.3C132.005 34.9126 122.92 7.5 100 7.5C77.0802 7.5 66.0051 34.9126 66.0051 48.3Z", fill: "#FFB5F5", opacity: "0.85" },
+    { d: "M111.5 38.8991C111.5 52.4707 102.92 120 80 120C57.0802 120 36 61.8987 36 48.3271C36 22 43.0802 0 66 0C88.9198 0 111.5 25.3275 111.5 38.8991Z", fill: "#FFB3F5", opacity: "0.93" },
+    { d: "M159.894 61.6868C160.721 59.6385 159.732 57.3072 157.684 56.4796L143.341 50.6848C124.874 43.2235 103.911 52.6558 97.247 71.4253L80 120L104.611 123.927C121.179 126.57 137.377 117.418 143.662 101.862L159.894 61.6868Z", fill: "#FFB2E8", opacity: "0.8" },
+    { d: "M1.72488 62.3336C0.786431 60.2479 1.78478 57.8013 3.91455 56.9676L19.6236 50.8181C38.6465 43.3714 59.9775 53.7315 65.8861 73.2869L80 120L59.004 123.653C42.8026 126.472 26.7504 117.954 20.0028 102.957L1.72488 62.3336Z", fill: "#FFB2E8", opacity: "0.8" },
+    { d: "M136 48C136 45.7909 134.209 44 132 44H113.56C94.8014 44 79.3783 58.7883 78.5905 77.53L76.8051 120H100C119.882 120 136 103.882 136 84V48Z", fill: "#FF9DE2", opacity: "0.91" },
+    { d: "M14.3134 37.4103C13.6911 34.61 16.1318 32.0843 18.9518 32.6104L52.3624 38.8437C68.5058 41.8556 80.3844 55.6862 80.9243 72.0993L82.5 120L59.1154 118.611C43.0664 117.657 29.5951 106.178 26.1075 90.4837L14.3134 37.4103Z", fill: "#FFB4E9", opacity: "0.98" },
+];
+
+const DESERT_CENTER = {
+    cx: 51,
+    cy: 47.8374,
+    r: 12,
+    fill: "#FFE3A6",
+};
+
+const DESERT_CENTER_GROW_MS = 500;
+
+const DESERT_PATHS = [
+    { d: "M32.7876 16.2522C32.2869 14.7396 32.5511 13.0628 33.5184 11.7967C45.4916 -3.87339 53.3693 -3.76155 66.6474 11.1166C68.1178 12.7642 68.4901 15.1183 67.6698 17.1686C63.3395 27.9915 60.3154 35.6338 60.5421 44.2453C60.7081 50.5534 56.432 56.8374 50.1217 56.8374C44.0338 56.8374 39.755 50.971 39.793 44.8832C39.8517 35.4891 36.5266 27.5483 32.7876 16.2522Z", fill: "#FF72F1" },
+    { d: "M15.7001 54.2995C14.1068 54.3083 12.5937 53.5389 11.6886 52.2277C0.485312 35.9982 3.02604 28.5405 21.2791 20.51C23.3005 19.6207 25.6544 19.994 27.3509 21.4078C36.306 28.8706 42.6397 34.1083 50.8998 36.5538C56.9505 38.3452 61.6055 44.3539 59.6555 50.3554C57.7743 56.1453 50.8727 58.4018 45.0947 56.4844C36.1785 53.5257 27.5988 54.2342 15.7001 54.2995Z", fill: "#FF89F3" },
+    { d: "M46.6051 82.308C46.1211 83.826 44.9218 85.0273 43.395 85.4829C24.4978 91.1227 18.1903 86.4018 16.1933 66.5604C15.9722 64.3632 17.0547 62.2399 18.9234 61.0634C28.7882 54.8526 35.7268 50.4475 40.6052 43.3474C44.1787 38.1464 51.3318 35.576 56.4369 39.2851C61.3621 42.8634 61.3755 50.1245 57.7665 55.0273C52.1973 62.5927 50.2199 70.9714 46.6051 82.308Z", fill: "#FE9AF4" },
+    { d: "M82.7927 61.5707C84.0869 62.5002 84.8587 64.012 84.8203 65.6049C84.3445 85.3199 77.9055 89.8598 58.4182 85.6278C56.2602 85.1592 54.5753 83.4735 54.0338 81.3326C51.1754 70.0314 49.13 62.0711 43.8849 55.2375C40.0427 50.2317 39.8086 42.6344 44.9137 38.9253C49.8389 35.347 56.7488 37.578 60.2963 42.5254C65.7705 50.1599 73.1281 54.6297 82.7927 61.5707Z", fill: "#F9ABF1" },
+    { d: "M74.2529 20.7461C75.5368 19.8025 77.2131 19.5356 78.7162 20.0643C97.3192 26.6092 99.6472 34.1359 89.6004 51.3617C88.4879 53.2693 86.364 54.3508 84.1606 54.2042C72.5292 53.4304 64.3265 52.9158 56.2065 55.7925C50.2584 57.8998 42.9606 55.7748 41.0106 49.7733C39.1294 43.9834 43.3865 38.1012 49.188 36.2562C58.1404 33.4091 64.6651 27.7928 74.2529 20.7461Z", fill: "#FFB8F8" },
+];
+
+const TULIP_ATTACH = { x: 25, y: 58 };
+
+const TULIP_PATHS = [
+    { d: "M14.5001 6.17907C17.5001 1.40356 26.0001 1.40349 29.5001 6.17906C31.463 8.85733 35.4704 23.7605 38.6116 36.334C40.9422 45.6629 33.8312 54.5974 24.2156 54.5974C15.4777 54.5974 8.60193 47.1444 9.4719 38.4499C10.7685 25.4917 12.7221 9.00934 14.5001 6.17907Z", fill: "#FF83F3" },
+    { d: "M10.4993 8.80544C12.5854 3.36046 20.4639 1.97122 24.779 6.28755C27.3044 8.81366 33.7862 24.9018 38.7285 37.8125C42.0576 46.509 36.5678 55.9956 27.3974 57.6126L26.6973 57.736C17.6535 59.3307 9.31967 52.5003 9.24984 43.3172C9.14481 29.5038 9.26925 12.0158 10.4993 8.80544Z", fill: "#FFCFFA" },
+    { d: "M23.8832 5.29961C27.619 0.773059 35.4725 2.01687 38.1176 7.55412C39.6744 10.8131 40.5151 28.4972 40.9434 42.4973C41.2277 51.7875 32.9575 58.943 23.7775 57.489L23.1965 57.397C14.1413 55.9628 8.48616 46.8151 11.3792 38.1153C15.7952 24.8356 21.6685 7.98296 23.8832 5.29961Z", fill: "#FF9FF5" },
+    { d: "M17 7.59743C20 2.59743 28 2.59738 31.5 7.59743C33.5484 10.5237 37.138 27.493 39.7633 41.0658C41.5317 50.2082 34.478 58.5974 25.1661 58.5974H24.4553C15.2719 58.5974 8.25079 50.4237 9.77666 41.3679C12.0719 27.7461 15.2312 10.5454 17 7.59743Z", fill: "#FFB8F8" },
+];
+
+const GRASS_ATTACH = { x: 43, y: 88 };
+
+const GRASS_PATHS = [
+    { d: "M14 0C22.5982 23.0288 34.096 34.4223 32.916 88H14C22.6213 48.7691 15.0509 39.3576 14 0Z", fill: "#B1FF81" },
+    { d: "M86 1C77.8543 23.7671 66.9616 35.0312 68.0796 88H86C77.8324 49.2149 85.0044 39.9103 86 1Z", fill: "#9AFF6B" },
+    { d: "M52 0C50.954 34.3561 53.142 53.6234 63 88H41C41.3231 52.4448 43.8142 33.2223 52 0Z", fill: "#90FF8B" },
+    { d: "M11 0C9.95403 34.3561 12.142 53.6234 22 88H0C0.323127 52.4448 2.81416 33.2223 11 0Z", fill: "#C6FFB4" },
+    { d: "M41.5 0C40.5016 34.3561 42.59 53.6234 52 88H31C31.3084 52.4448 33.6862 33.2223 41.5 0Z", fill: "#9AFF6B" },
+    { d: "M62 0C63.046 34.3561 60.858 53.6234 51 88H73C72.6769 52.4448 70.1858 33.2223 62 0Z", fill: "#B9FFB5" },
+];
+
+const LARKSPUR_PINKS = [
+    "#FFB8D9", "#FFC4E0", "#FF9ECF", "#FFD1EB",
+    "#FFABD6", "#F8A8D8", "#FFB5E8", "#FFCCEE",
+    "#FF9FD8", "#FFD6EF",
+];
+
+const DAISY_CENTER = {
+    cx: 96.2185,
+    cy: 97.7576,
+    r: 12,
+    fill: "#B700AA",
+};
+
+const DAISY_CENTER_GROW_MS = 500;
+
+const DAISY_PETALS = [
+    { cx: 103.671, cy: 60.4018, rx: 9, ry: 34.5, rotate: 10.5, fill: "#FF86FD" },
+    { cx: 88.6237, cy: 58.3107, rx: 9, ry: 34.5, rotate: -12, fill: "#FF9AFD" },
+    { cx: 75.7267, cy: 64.8373, rx: 9, ry: 34.5, rotate: -37, fill: "#FFA4FD" },
+    { cx: 67.6992, cy: 77.2029, rx: 9, ry: 34.5, rotate: -57, fill: "#FFB1FE" },
+    { cx: 60.0128, cy: 88.6242, rx: 9, ry: 34.5, rotate: -80, fill: "#FFB8FE" },
+    { cx: 59.2133, cy: 103.599, rx: 9, ry: 34.5, rotate: -102, fill: "#FFAFFE" },
+    { cx: 66.6353, cy: 117.432, rx: 9, ry: 34.5, rotate: 55.5, fill: "#FEA5FC" },
+    { cx: 77.8433, cy: 124.927, rx: 9, ry: 34.5, rotate: -147, fill: "#FF9AFD" },
+    { cx: 89.8239, cy: 131.298, rx: 9, ry: 34.5, rotate: 10.5, fill: "#FF87FD" },
+    { cx: 104.501, cy: 133.009, rx: 9, ry: 34.5, rotate: -12, fill: "#FF74FD" },
+    { cx: 119.227, cy: 130.05, rx: 9, ry: 34.5, rotate: -37, fill: "#FF5BFC" },
+    { cx: 125.568, cy: 114.783, rx: 9, ry: 34.5, rotate: -57, fill: "#FE68FB" },
+    { cx: 136.192, cy: 103.517, rx: 9, ry: 34.5, rotate: -80, fill: "#FF79FD" },
+    { cx: 133.912, cy: 87.7212, rx: 9, ry: 34.5, rotate: -102, fill: "#FE95FC" },
+    { cx: 125.77, cy: 75.9459, rx: 9, ry: 34.5, rotate: 55.5, fill: "#FFA3FD" },
+    { cx: 115.424, cy: 67.059, rx: 9, ry: 34.5, rotate: 33, fill: "#FFB3FE" },
+    { cx: 82.736, cy: 63.0754, rx: 9, ry: 34.5, rotate: -22.5, fill: "#FF86FD" },
+    { cx: 68.9776, cy: 69.5168, rx: 9, ry: 34.5, rotate: -45, fill: "#FF9AFD" },
+    { cx: 61.7161, cy: 82.0146, rx: 9, ry: 34.5, rotate: -70, fill: "#FFA4FD" },
+    { cx: 61.7185, cy: 96.7576, rx: 9, ry: 34.5, rotate: -90, fill: "#FFB1FE" },
+    { cx: 61.4925, cy: 110.522, rx: 9, ry: 34.5, rotate: -113, fill: "#FFB8FE" },
+    { cx: 68.9778, cy: 123.517, rx: 9, ry: 34.5, rotate: -135, fill: "#FFAFFE" },
+    { cx: 82.7361, cy: 131.076, rx: 9, ry: 34.5, rotate: 22.5, fill: "#FEA5FC" },
+    { cx: 96.2185, cy: 131.258, rx: 9, ry: 34.5, rotate: 180, fill: "#FF9AFD" },
+    { cx: 109.736, cy: 130.075, rx: 9, ry: 34.5, rotate: -22.5, fill: "#FF87FD" },
+    { cx: 122.978, cy: 123.517, rx: 9, ry: 34.5, rotate: -45, fill: "#FF74FD" },
+    { cx: 133.716, cy: 113.015, rx: 9, ry: 34.5, rotate: -70, fill: "#FF5BFC" },
+    { cx: 130.719, cy: 96.7576, rx: 9, ry: 34.5, rotate: -90, fill: "#FE68FB" },
+    { cx: 133.493, cy: 81.5223, rx: 9, ry: 34.5, rotate: -113, fill: "#FF79FD" },
+    { cx: 122.978, cy: 69.5167, rx: 9, ry: 34.5, rotate: -135, fill: "#FE95FC" },
+    { cx: 109.736, cy: 64.0756, rx: 9, ry: 34.5, rotate: 22.5, fill: "#FFA3FD" },
+    { cx: 96.2185, cy: 62.2576, rx: 9, ry: 34.5, rotate: 0, fill: "#FF8EFD" },
+];
+
+function pickFlowerType() {
+    const roll = Math.random();
+    if (roll < 0.225) return "rose";
+    if (roll < 0.45) return "desert";
+    if (roll < 0.675) return "tulip";
+    if (roll < 0.75) return "larkspur";
+    return "daisy";
+}
+
+function getStemAngleFromCurve(y, controlY, bendAmount) {
+    return Math.atan2(y - controlY, -bendAmount) * 180 / Math.PI;
+}
+
+function animateCalyx(ellipse, stemDuration) {
+    const targetRx = ROSE_CALYX.rx;
+    const targetRy = ROSE_CALYX.ry;
+    const growMs = 500;
+
+    ellipse.setAttribute("rx", 0);
+    ellipse.setAttribute("ry", 0);
+
+    setTimeout(() => {
+        const start = performance.now();
+
+        function frame(now) {
+            const t = Math.min(1, (now - start) / growMs);
+            const eased = 1 - Math.pow(1 - t, 3);
+            ellipse.setAttribute("rx", targetRx * eased);
+            ellipse.setAttribute("ry", targetRy * eased);
+            if (t < 1) requestAnimationFrame(frame);
+        }
+
+        requestAnimationFrame(frame);
+    }, stemDuration);
+}
+
+function animateDesertCenter(circle, stemDuration) {
+    const targetR = DESERT_CENTER.r;
+    const growMs = DESERT_CENTER_GROW_MS;
+
+    circle.setAttribute("r", 0);
+
+    setTimeout(() => {
+        const start = performance.now();
+
+        function frame(now) {
+            const t = Math.min(1, (now - start) / growMs);
+            const eased = 1 - Math.pow(1 - t, 3);
+            circle.setAttribute("r", targetR * eased);
+            if (t < 1) requestAnimationFrame(frame);
+        }
+
+        requestAnimationFrame(frame);
+    }, stemDuration);
+}
+
+function animateDaisyCenter(circle, stemDuration) {
+    const targetR = DAISY_CENTER.r;
+    const growMs = DAISY_CENTER_GROW_MS;
+
+    circle.setAttribute("r", 0);
+
+    setTimeout(() => {
+        const start = performance.now();
+
+        function frame(now) {
+            const t = Math.min(1, (now - start) / growMs);
+            const eased = 1 - Math.pow(1 - t, 3);
+            circle.setAttribute("r", targetR * eased);
+            if (t < 1) requestAnimationFrame(frame);
+        }
+
+        requestAnimationFrame(frame);
+    }, stemDuration);
+}
+
+function growCircleFromZero(circle, targetR, growMs, onComplete) {
+    circle.setAttribute("r", 0);
+
+    const start = performance.now();
+
+    function frame(now) {
+        const t = Math.min(1, (now - start) / growMs);
+        const eased = 1 - Math.pow(1 - t, 3);
+        circle.setAttribute("r", targetR * eased);
+        if (t < 1) requestAnimationFrame(frame);
+        else if (onComplete) onComplete();
+    }
+
+    requestAnimationFrame(frame);
+}
+
+function animatePetalFromCenter(petalGroup, cx, cy, delay) {
+    const growMs = 900;
+
+    const setScale = (scale) => {
+        petalGroup.setAttribute(
+            "transform",
+            `translate(${cx}, ${cy}) scale(${scale}) translate(${-cx}, ${-cy})`
+        );
+    };
+
+    setScale(0);
+
+    setTimeout(() => {
+        const start = performance.now();
+
+        function frame(now) {
+            const t = Math.min(1, (now - start) / growMs);
+            const eased = 1 - Math.pow(1 - t, 3);
+            setScale(eased);
+            if (t < 1) requestAnimationFrame(frame);
+        }
+
+        requestAnimationFrame(frame);
+    }, delay);
+}
+
+function animateDesertPetal(petalGroup, delay) {
+    animatePetalFromCenter(
+        petalGroup,
+        DESERT_CENTER.cx,
+        DESERT_CENTER.cy,
+        delay
+    );
+}
+
+function spawnRose(x, y, angle, stemDuration) {
+    const gap = 14;
+    const scale = getFlowerScale(0.9);
+    const rotation = angle + 90;
+
+    const mount = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    mount.setAttribute(
+        "transform",
+        `translate(${x}, ${y + gap}) rotate(${rotation}) scale(${scale}) translate(-80, -120)`
+    );
+
+    const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    group.classList.add("rose-sway");
+    group.style.animationDelay = `${Math.random() * 3}s`;
+
+    const calyxGlow = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    calyxGlow.classList.add("calyx-glow");
+
+    const ellipse = document.createElementNS("http://www.w3.org/2000/svg", "ellipse");
+    ellipse.setAttribute("cx", ROSE_CALYX.cx);
+    ellipse.setAttribute("cy", ROSE_CALYX.cy);
+    ellipse.setAttribute("fill", ROSE_CALYX.fill);
+    ellipse.setAttribute("fill-opacity", ROSE_CALYX.opacity);
+    calyxGlow.appendChild(ellipse);
+    group.appendChild(calyxGlow);
+
+    animateCalyx(ellipse, stemDuration);
+
+    ROSE_PATHS.forEach(({ d, fill, opacity }, i) => {
+        const petal = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        petal.classList.add("petal");
+        petal.style.animationDelay = `${stemDuration + i * 140}ms`;
+
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute("d", d);
+        path.setAttribute("fill", fill);
+        path.setAttribute("fill-opacity", opacity);
+        petal.appendChild(path);
+
+        group.appendChild(petal);
+    });
+
+    plantAppend(mount);
+    mount.appendChild(group);
+
+    startRoseSpores(x, y, angle, stemDuration);
+}
+
+function spawnDesertFlower(x, y, angle, stemDuration) {
+    const gap = 12;
+    const scale = getFlowerScale(1.42);
+    const rotation = angle + 90;
+    const originX = DESERT_CENTER.cx;
+    const originY = DESERT_CENTER.cy;
+    const petalStart = stemDuration + DESERT_CENTER_GROW_MS;
+
+    const mount = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    mount.setAttribute(
+        "transform",
+        `translate(${x}, ${y + gap}) rotate(${rotation}) scale(${scale}) translate(-${originX}, -${originY})`
+    );
+
+    const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    group.classList.add("desert-sway");
+    group.style.animationDelay = `${Math.random() * 3}s`;
+
+    const back = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    const front = document.createElementNS("http://www.w3.org/2000/svg", "g");
+
+    DESERT_PATHS.forEach(({ d, fill }, i) => {
+        const petal = document.createElementNS("http://www.w3.org/2000/svg", "g");
+
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute("d", d);
+        path.setAttribute("fill", fill);
+        path.classList.add("desert-petal-glow");
+        petal.appendChild(path);
+
+        back.appendChild(petal);
+        animateDesertPetal(petal, petalStart + i * 140);
+    });
+
+    const center = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    center.setAttribute("cx", DESERT_CENTER.cx);
+    center.setAttribute("cy", DESERT_CENTER.cy);
+    center.setAttribute("fill", DESERT_CENTER.fill);
+    front.appendChild(center);
+
+    animateDesertCenter(center, stemDuration);
+
+    group.appendChild(back);
+    group.appendChild(front);
+
+    plantAppend(mount);
+    mount.appendChild(group);
+
+    startRoseSpores(x, y, angle, stemDuration);
+}
+
+function spawnTulip(x, y, angle, stemDuration) {
+    const gap = 10;
+    const scale = getFlowerScale(1.94);
+    const rotation = angle + 90;
+
+    const mount = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    mount.setAttribute(
+        "transform",
+        `translate(${x}, ${y + gap}) rotate(${rotation}) scale(${scale}) translate(-${TULIP_ATTACH.x}, -${TULIP_ATTACH.y})`
+    );
+
+    const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    group.classList.add("tulip-sway");
+    group.style.animationDelay = `${Math.random() * 3}s`;
+
+    TULIP_PATHS.forEach(({ d, fill }, i) => {
+        const petal = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        petal.classList.add("tulip-petal");
+        petal.style.animationDelay = `${stemDuration + i * 120}ms`;
+
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute("d", d);
+        path.setAttribute("fill", fill);
+        petal.appendChild(path);
+
+        group.appendChild(petal);
+    });
+
+    plantAppend(mount);
+    mount.appendChild(group);
+
+    startRoseSpores(x, y, angle, stemDuration);
+}
+
+function spawnLarkspur(x, y, angle, stemDuration) {
+    const gap = 8;
+    const rotation = angle + 90;
+
+    const mount = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    mount.setAttribute(
+        "transform",
+        `translate(${x}, ${y + gap}) rotate(${rotation}) scale(${getFlowerScale(1.16)})`
+    );
+
+    const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    group.classList.add("larkspur-sway");
+    group.style.animationDelay = `${Math.random() * 3}s`;
+
+    const bloomCount = 13 + Math.floor(Math.random() * 7);
+
+    for (let i = 0; i < bloomCount; i++) {
+        const bloom = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        bloom.classList.add("larkspur-bloom");
+        bloom.style.animationDelay = `${stemDuration + i * 55}ms`;
+
+        const bx = random(-6, 6);
+        const by = -4 - i * random(3.5, 5.5);
+        const rx = random(4.5, 7);
+        const ry = random(5.8, 8.5);
+
+        const petal = document.createElementNS("http://www.w3.org/2000/svg", "ellipse");
+        petal.setAttribute("cx", bx);
+        petal.setAttribute("cy", by);
+        petal.setAttribute("rx", rx);
+        petal.setAttribute("ry", ry);
+        petal.setAttribute("fill", LARKSPUR_PINKS[Math.floor(Math.random() * LARKSPUR_PINKS.length)]);
+        petal.setAttribute("fill-opacity", random(0.8, 0.98));
+        bloom.appendChild(petal);
+
+        const spur = document.createElementNS("http://www.w3.org/2000/svg", "ellipse");
+        spur.setAttribute("cx", bx + random(-2, 2));
+        spur.setAttribute("cy", by + ry * 0.55);
+        spur.setAttribute("rx", rx * 0.35);
+        spur.setAttribute("ry", ry * 0.45);
+        spur.setAttribute("fill", LARKSPUR_PINKS[Math.floor(Math.random() * LARKSPUR_PINKS.length)]);
+        spur.setAttribute("fill-opacity", random(0.65, 0.85));
+        bloom.appendChild(spur);
+
+        group.appendChild(bloom);
+    }
+
+    plantAppend(mount);
+    mount.appendChild(group);
+}
+
+function startLarkspurSpores(stemPath, stemDuration) {
+    const plant = currentPlant;
+    const pinkStart = 0.2;
+    const pinkEnd = 0.98;
+    let cancelled = false;
+    const timeouts = [];
+
+    registerSporeLoop(() => {
+        cancelled = true;
+        timeouts.forEach(clearTimeout);
+    });
+
+    function schedule() {
+        if (cancelled || !plant.group.isConnected) return;
+
+        const totalLen = stemPath.getTotalLength();
+        const frac = random(pinkStart, pinkEnd);
+        const at = totalLen * frac;
+        const pt = stemPath.getPointAtLength(at);
+        const before = stemPath.getPointAtLength(Math.max(0, at - 6));
+        const after = stemPath.getPointAtLength(Math.min(totalLen, at + 6));
+        const dx = after.x - before.x;
+        const dy = after.y - before.y;
+        const segLen = Math.hypot(dx, dy) || 1;
+        const nx = -dy / segLen;
+        const ny = dx / segLen;
+        const side = randomSide();
+        const outward = random(1, 14);
+        const localAngle = Math.atan2(dy, dx) * 180 / Math.PI;
+
+        emitSpore(
+            pt.x + nx * side * outward,
+            pt.y + ny * side * outward,
+            localAngle,
+            plant
+        );
+        timeouts.push(setTimeout(schedule, random(450, 950)));
+    }
+
+    timeouts.push(setTimeout(
+        schedule,
+        stemTimeForFraction(pinkStart, stemDuration) + 300
+    ));
+}
+
+function spawnDaisy(x, y, angle, stemDuration) {
+    const gap = 12;
+    const scale = getFlowerScale(0.94);
+    const rotation = angle + 90;
+    const originX = DAISY_CENTER.cx;
+    const originY = DAISY_CENTER.cy;
+    const petalStart = stemDuration + DAISY_CENTER_GROW_MS;
+
+    const mount = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    mount.setAttribute(
+        "transform",
+        `translate(${x}, ${y + gap}) rotate(${rotation}) scale(${scale}) translate(-${originX}, -${originY})`
+    );
+
+    const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    group.classList.add("daisy-sway");
+    group.style.animationDelay = `${Math.random() * 3}s`;
+
+    const back = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    const front = document.createElementNS("http://www.w3.org/2000/svg", "g");
+
+    DAISY_PETALS.forEach((petal, i) => {
+        const petalGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+
+        const ellipse = document.createElementNS("http://www.w3.org/2000/svg", "ellipse");
+        ellipse.setAttribute("cx", petal.cx);
+        ellipse.setAttribute("cy", petal.cy);
+        ellipse.setAttribute("rx", petal.rx);
+        ellipse.setAttribute("ry", petal.ry);
+        ellipse.setAttribute("fill", petal.fill);
+        if (petal.rotate) {
+            ellipse.setAttribute(
+                "transform",
+                `rotate(${petal.rotate} ${petal.cx} ${petal.cy})`
+            );
+        }
+        ellipse.classList.add("daisy-petal-glow");
+        petalGroup.appendChild(ellipse);
+
+        back.appendChild(petalGroup);
+        animatePetalFromCenter(
+            petalGroup,
+            originX,
+            originY,
+            petalStart + i * 40
+        );
+    });
+
+    const center = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    center.setAttribute("cx", DAISY_CENTER.cx);
+    center.setAttribute("cy", DAISY_CENTER.cy);
+    center.setAttribute("fill", DAISY_CENTER.fill);
+    front.appendChild(center);
+
+    animateDaisyCenter(center, stemDuration);
+
+    group.appendChild(back);
+    group.appendChild(front);
+
+    plantAppend(mount);
+    mount.appendChild(group);
+
+    startRoseSpores(x, y, angle, stemDuration);
+}
+
+function spawnFlower(type, x, y, angle, stemDuration, stemPath) {
+    if (type === "rose") {
+        spawnRose(x, y, angle, stemDuration);
+    } else if (type === "desert") {
+        spawnDesertFlower(x, y, angle, stemDuration);
+    } else if (type === "tulip") {
+        spawnTulip(x, y, angle, stemDuration);
+    } else if (type === "larkspur") {
+        spawnLarkspur(x, y, angle, stemDuration);
+        startLarkspurSpores(stemPath, stemDuration);
+    } else {
+        spawnDaisy(x, y, angle, stemDuration);
+    }
+}
+
+function emitSpore(startX, startY, angle, plant) {
+    const spore = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    spore.setAttribute("cx", startX);
+    spore.setAttribute("cy", startY);
+    spore.setAttribute("r", 1 + Math.random() * 1.8);
+    spore.setAttribute("fill", "rgba(255, 190, 220, 0.75)");
+    appendToPlant(plant, spore);
+
+    const drift = (angle + 90) * Math.PI / 180;
+    const spread = random(-40, 40) * Math.PI / 180;
+    const dist = random(45, 90);
+    const dx = Math.cos(drift + spread) * dist;
+    const dy = Math.sin(drift + spread) * dist - random(25, 55);
+    const duration = random(2.5, 4.5) * 1000;
+    const start = performance.now();
+
+    function frame(now) {
+        if (!spore.isConnected) return;
+
+        const t = Math.min(1, (now - start) / duration);
+        const eased = 1 - Math.pow(1 - t, 2);
+        spore.setAttribute("cx", startX + dx * eased);
+        spore.setAttribute("cy", startY + dy * eased);
+        spore.setAttribute("opacity", 0.75 * (1 - t));
+        if (t < 1) requestAnimationFrame(frame);
+        else spore.remove();
+    }
+
+    requestAnimationFrame(frame);
+}
+
+function startRoseSpores(x, y, angle, stemDuration) {
+    const plant = currentPlant;
+    if (!plant) return;
+    const tipX = x;
+    const tipY = y - random(38, 52);
+    let cancelled = false;
+    const timeouts = [];
+
+    registerSporeLoop(() => {
+        cancelled = true;
+        timeouts.forEach(clearTimeout);
+    });
+
+    function schedule() {
+        if (cancelled || !plant.group.isConnected) return;
+
+        emitSpore(
+            tipX + random(-8, 8),
+            tipY + random(-5, 5),
+            angle,
+            plant
+        );
+        timeouts.push(setTimeout(schedule, random(550, 1100)));
+    }
+
+    timeouts.push(setTimeout(schedule, stemDuration + 900));
+}
+
+function randomSide() {
+    return Math.random() < 0.5 ? 1 : -1;
+}
+
+function spawnGrassClump(stemPath, x, bottomY, duration, scaleX, scaleY, mirror = false) {
+    const sx = mirror ? -scaleX : scaleX;
+
+    const mount = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    mount.setAttribute(
+        "transform",
+        `translate(${x}, ${bottomY}) scale(${sx}, ${scaleY}) translate(-${GRASS_ATTACH.x}, -${GRASS_ATTACH.y})`
+    );
+
+    const clump = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    clump.classList.add("grass-clump");
+    clump.style.animationDelay = `${random(0, duration * 0.12)}ms`;
+
+    GRASS_PATHS.forEach(({ d, fill }) => {
+        const blade = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        blade.setAttribute("d", d);
+        blade.setAttribute("fill", fill);
+        clump.appendChild(blade);
+    });
+
+    mount.appendChild(clump);
+    if (stemPath.nextSibling) {
+        plantInsertAfter(mount, stemPath);
+    } else {
+        plantAppend(mount);
+    }
+}
+
+function spawnGrass(stemPath, x, bottomY, duration) {
+    const scaleX = random(0.30, 0.50);
+    const spacing = scaleX * GRASS_ATTACH.x * 1.68;
+
+    [-1, 0, 1].forEach((slot) => {
+        spawnGrassClump(
+            stemPath,
+            x + slot * spacing,
+            bottomY,
+            duration,
+            scaleX,
+            scaleX * random(0.82, 1.62),
+            slot < 0
+        );
+    });
+}
+
+function addStemLeaf(stemPath, frac, duration, side, outward, upward, host = null) {
+    const totalLen = stemPath.getTotalLength();
+    const at = totalLen * frac;
+    const pt = stemPath.getPointAtLength(at);
+    const before = stemPath.getPointAtLength(Math.max(0, at - 4));
+    const dx = pt.x - before.x;
+    const dy = pt.y - before.y;
+    const len = Math.hypot(dx, dy) || 1;
+    const tx = dx / len;
+    const ty = dy / len;
+    const nx = -ty * side;
+    const ny = tx * side;
+    const lx = nx * outward + tx * upward;
+    const ly = ny * outward + ty * upward;
+    const leafAngle = Math.atan2(ly, lx) * 180 / Math.PI - 90;
+    const attachX = pt.x + nx * 1.5;
+    const attachY = pt.y + ny * 1.5;
+
+    const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    group.setAttribute(
+        "transform",
+        `translate(${attachX}, ${attachY}) rotate(${leafAngle})`
+    );
+
+    const leaf = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    leaf.setAttribute("d", "M 0 0 Q 19 19 0 48 Q -19 19 0 0");
+    leaf.classList.add("leaf");
+    leaf.style.animationDelay = `${duration * frac}ms`;
+
+    group.appendChild(leaf);
+
+    if (host) {
+        host.insertBefore(group, stemPath);
+    } else {
+        plantInsertBefore(group, stemPath);
+    }
+}
+
+function addHeavyLeaf(stemPath, frac, duration, side, bias = null) {
+    const totalLen = stemPath.getTotalLength();
+    const at = totalLen * frac;
+    const pt = stemPath.getPointAtLength(at);
+    const before = stemPath.getPointAtLength(Math.max(0, at - 4));
+    const dx = pt.x - before.x;
+    const dy = pt.y - before.y;
+    const len = Math.hypot(dx, dy) || 1;
+    const tx = dx / len;
+    const ty = dy / len;
+    const nx = -ty * side;
+    const ny = tx * side;
+    const outward = bias ? bias.outward : random(0.72, 0.95);
+    const upward = bias ? bias.upward : random(0.12, 0.32);
+    const lx = nx * outward + tx * upward;
+    const ly = ny * outward + ty * upward;
+    const leafAngle = Math.atan2(ly, lx) * 180 / Math.PI - 90;
+    const attachX = pt.x + nx * 1.5;
+    const attachY = pt.y + ny * 1.5;
+    const leafW = bias ? random(15, 22) : random(14, 20);
+    const leafLen = bias ? random(26, 40) : random(24, 38);
+
+    const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    group.setAttribute(
+        "transform",
+        `translate(${attachX}, ${attachY}) rotate(${leafAngle})`
+    );
+
+    const leaf = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    leaf.setAttribute(
+        "d",
+        `M 0 0 Q ${leafW} ${leafLen * 0.48} 0 ${leafLen} Q ${-leafW} ${leafLen * 0.48} 0 0`
+    );
+    leaf.classList.add("heavy-leaf");
+    leaf.style.animationDelay = `${stemTimeForFraction(frac, duration) + (bias ? random(60, 140) : 0)}ms`;
+    leaf.style.animationDuration = `${random(420, 580)}ms`;
+
+    group.appendChild(leaf);
+
+    if (stemPath.nextSibling) {
+        plantInsertAfter(group, stemPath);
+    } else {
+        plantAppend(group);
+    }
+}
+
+function spawnHeavyLeaves(stemPath, duration) {
+    const pairCount = 3 + Math.floor(Math.random() * 3);
+    const leafStart = 0.3;
+    const leafEnd = 0.86;
+
+    for (let i = 0; i < pairCount; i++) {
+        const frac = leafStart + (i / Math.max(1, pairCount - 1)) * (leafEnd - leafStart);
+
+        addHeavyLeaf(stemPath, frac, duration, -1);
+        addHeavyLeaf(stemPath, frac, duration, 1);
+    }
+
+    const tipBias = { outward: random(0.5, 0.65), upward: random(0.55, 0.78) };
+    addHeavyLeaf(stemPath, 0.97, duration, -1, tipBias);
+    addHeavyLeaf(stemPath, 0.97, duration, 1, tipBias);
+}
+
+function spawnHeavyPlant(baseX, bottomY, awaySide = null) {
+    const droopSide = awaySide !== null ? awaySide : randomSide();
+    const heavyHeight = random(95, 140);
+    const droopReach = random(48, 78);
+    const tipY = bottomY - heavyHeight * random(0.68, 0.82);
+
+    const tipX = baseX + droopSide * droopReach;
+
+    const c1x = baseX + droopSide * random(8, 18);
+    const c1y = bottomY - heavyHeight * random(0.4, 0.54);
+    const c2x = baseX + droopSide * random(55, 92);
+    const c2y = tipY + random(-6, 10);
+
+    const d =
+        `M ${baseX} ${bottomY}
+         C ${c1x} ${c1y} ${c2x} ${c2y} ${tipX} ${tipY}`;
+
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", d);
+    path.classList.add("stem");
+
+    plantAppend(path);
+
+    const length = path.getTotalLength();
+    const duration = Math.min(2200, Math.max(1100, length * 4.5));
+
+    path.style.setProperty("--length", length);
+    path.style.setProperty("--duration", duration + "ms");
+
+    spawnHeavyLeaves(path, duration);
+
+    path.addEventListener(
+        "animationend",
+        () => {
+            path.style.strokeDasharray = "none";
+            path.style.strokeDashoffset = "0";
+            path.style.animation = "none";
+        },
+        { once: true }
+    );
+}
+
+function addTulipBlade(stemPath, frac, duration, side, bladeLength, tilt, bulge, width) {
+    const totalLen = stemPath.getTotalLength();
+    const at = totalLen * frac;
+    const pt = stemPath.getPointAtLength(at);
+    const ahead = stemPath.getPointAtLength(Math.min(totalLen, at + 8));
+    const dx = ahead.x - pt.x;
+    const dy = ahead.y - pt.y;
+    const len = Math.hypot(dx, dy) || 1;
+    const tx = dx / len;
+    const ty = dy / len;
+    const nx = -ty * side;
+    const ny = tx * side;
+    const inset = random(0, 0.55);
+    const attachX = pt.x + nx * inset;
+    const attachY = pt.y + ny * inset;
+    const bladeAngle =
+        Math.atan2(dx, dy) * 180 / Math.PI + tilt * side;
+
+    const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    group.setAttribute(
+        "transform",
+        `translate(${attachX}, ${attachY}) rotate(${bladeAngle})`
+    );
+
+    const stemHalf = width / 2;
+    const bowAmt = Math.min(bulge, bladeLength * 0.058) * side;
+    const midH = bladeLength * 0.4;
+    const blade = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    blade.setAttribute(
+        "d",
+        `M ${-stemHalf} 0 L ${stemHalf} 0 Q ${bowAmt} ${midH} 0 ${bladeLength} Q ${-bowAmt * 0.62} ${midH} ${-stemHalf} 0 Z`
+    );
+    blade.classList.add("tulip-blade");
+    blade.style.animationDelay = `${stemTimeForFraction(frac, duration)}ms`;
+    blade.style.animationDuration = `${random(750, 1050)}ms`;
+
+    group.appendChild(blade);
+    plantInsertBefore(group, stemPath);
+}
+
+function spawnTulipLeaves(stemPath, duration) {
+    const totalLen = stemPath.getTotalLength();
+    const stemFactor = Math.min(1, totalLen / 300);
+    const tallSide = randomSide();
+    const leafCount = Math.random() < 0.5 ? 1 : 2;
+
+    function addLeaf(frac, side, tall) {
+        const reach = totalLen * (1 - frac);
+        const length = (tall
+            ? Math.min(
+                reach + random(4, 14) * stemFactor,
+                totalLen * 0.92
+            )
+            : Math.min(reach * random(0.38, 0.65), totalLen * 0.5)) * 1.22;
+
+        addTulipBlade(
+            stemPath,
+            frac,
+            duration,
+            side,
+            length,
+            random(0, 0.2) * stemFactor,
+            random(2.5, 4.8) * (0.5 + stemFactor * 0.5),
+            random(5.8, 7.2)
+        );
+    }
+
+    if (leafCount === 1) {
+        addLeaf(random(0.07, 0.22), tallSide, true);
+        return;
+    }
+
+    const bothTall = Math.random() < 0.3;
+    addLeaf(random(0.07, 0.2), tallSide, true);
+    addLeaf(
+        random(0.3, 0.55),
+        bothTall ? randomSide() : -tallSide,
+        bothTall
+    );
+}
+
+function addLarkspurLeaf(stemPath, frac, duration, side, color) {
+    const totalLen = stemPath.getTotalLength();
+    const at = totalLen * frac;
+    const pt = stemPath.getPointAtLength(at);
+    const before = stemPath.getPointAtLength(Math.max(0, at - 6));
+    const after = stemPath.getPointAtLength(Math.min(totalLen, at + 6));
+    const dx = after.x - before.x;
+    const dy = after.y - before.y;
+    const len = Math.hypot(dx, dy) || 1;
+    const tx = dx / len;
+    const ty = dy / len;
+    const nx = -ty * side;
+    const ny = tx * side;
+    const outward = random(0.55, 0.85);
+    const upward = random(0.2, 0.48);
+    const lx = nx * outward + tx * upward;
+    const ly = ny * outward + ty * upward;
+    const leafAngle =
+        Math.atan2(ly, lx) * 180 / Math.PI - 90 + random(-8, 8);
+    const attachX = pt.x + nx * random(0.4, 1.4);
+    const attachY = pt.y + ny * random(0.4, 1.4);
+
+    const leafLen = random(15, 34);
+    const leafW = random(8, 16);
+
+    const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    group.setAttribute(
+        "transform",
+        `translate(${attachX}, ${attachY}) rotate(${leafAngle})`
+    );
+
+    const leaf = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    leaf.setAttribute(
+        "d",
+        `M 0 0 Q ${leafW} ${leafLen * 0.48} 0 ${leafLen} Q ${-leafW} ${leafLen * 0.48} 0 0`
+    );
+    leaf.setAttribute("fill", color);
+    leaf.setAttribute("fill-opacity", random(0.72, 0.96));
+    leaf.classList.add("larkspur-leaf");
+    leaf.style.animationDelay = `${stemTimeForFraction(frac, duration)}ms`;
+    leaf.style.animationDuration = `${random(380, 620)}ms`;
+
+    group.appendChild(leaf);
+
+    if (stemPath.nextSibling) {
+        plantInsertAfter(group, stemPath);
+    } else {
+        plantAppend(group);
+    }
+}
+
+function spawnLarkspurLeaves(stemPath, duration) {
+    const totalLen = stemPath.getTotalLength();
+    const startFrac = 0.2;
+    const endFrac = 0.98;
+    const spanLen = totalLen * (endFrac - startFrac);
+    const count = Math.max(30, Math.floor(spanLen / random(4, 7)));
+
+    for (let i = 0; i < count; i++) {
+        const t = i / Math.max(1, count - 1);
+        const frac = startFrac + t * (endFrac - startFrac) + random(-0.006, 0.006);
+
+        for (const side of [-1, 1]) {
+            const color = LARKSPUR_PINKS[Math.floor(Math.random() * LARKSPUR_PINKS.length)];
+            addLarkspurLeaf(
+                stemPath,
+                frac + random(-0.004, 0.004),
+                duration,
+                side,
+                color
+            );
+        }
+
+        if (Math.random() < 0.4) {
+            addLarkspurLeaf(
+                stemPath,
+                frac + random(-0.01, 0.01),
+                duration,
+                randomSide(),
+                LARKSPUR_PINKS[Math.floor(Math.random() * LARKSPUR_PINKS.length)]
+            );
+        }
+    }
+}
+
+function spawnLeaves(stemPath, stemHeight, duration, host = null) {
+    const count = stemHeight < 280 ? 2 : 3;
+    const fractions = count === 2 ? [0.38, 0.64] : [0.3, 0.52, 0.72];
+
+    fractions.forEach((frac) => {
+        addStemLeaf(
+            stemPath,
+            frac,
+            duration,
+            randomSide(),
+            random(0.6, 0.8),
+            random(0.4, 0.55),
+            host
+        );
+    });
+
+    addStemLeaf(
+        stemPath,
+        0.88,
+        duration,
+        randomSide(),
+        0.65,
+        0.45,
+        host
+    );
+}
+
+function random(min,max){
+    return Math.random()*(max-min)+min;
+}
+
+function easeInOut(t) {
+    return t < 0.5
+        ? 2 * t * t
+        : 1 - Math.pow(-2 * t + 2, 2) / 2;
+}
+
+function stemTimeForFraction(frac, duration) {
+    if (frac <= 0) return 0;
+    if (frac >= 1) return duration;
+
+    let lo = 0;
+    let hi = 1;
+
+    for (let i = 0; i < 24; i++) {
+        const mid = (lo + hi) / 2;
+        if (easeInOut(mid) < frac) lo = mid;
+        else hi = mid;
+    }
+
+    return duration * ((lo + hi) / 2);
+}
+
+function finalizeStem(path) {
+    path.addEventListener(
+        "animationend",
+        () => {
+            path.style.strokeDasharray = "none";
+            path.style.strokeDashoffset = "0";
+            path.style.animation = "none";
+        },
+        { once: true }
+    );
+}
+
+function growStemFromBase(baseX, bottomY, tipX, tipY, flowerType, withGrass, bendAwaySign = null) {
+    const stemHeight = bottomY - tipY;
+    const bendDirection =
+        bendAwaySign !== null
+            ? bendAwaySign
+            : Math.random() > 0.5
+              ? 1
+              : -1;
+    const bendAmount =
+        random(stemHeight * 0.06, stemHeight * 0.14)
+        * bendDirection;
+    const controlY = (bottomY + tipY) * 0.5;
+
+    const d =
+        `M ${baseX} ${bottomY}
+         Q ${baseX + bendAmount} ${controlY}
+         ${tipX} ${tipY}`;
+
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", d);
+    path.classList.add("stem");
+    plantAppend(path);
+
+    const length = path.getTotalLength();
+    const duration =
+        Math.min(
+            5000,
+            Math.max(
+                2200,
+                length * 3
+            )
+        );
+
+    if (withGrass) {
+        spawnGrass(path, baseX, bottomY, duration);
+    }
+
+    path.style.setProperty("--length", length);
+    path.style.setProperty("--duration", duration + "ms");
+
+    const stemAngle = getStemAngleFromCurve(tipY, controlY, bendAmount);
+
+    if (flowerType === "tulip") {
+        spawnTulipLeaves(path, duration);
+    } else if (flowerType === "larkspur") {
+        spawnLarkspurLeaves(path, duration);
+    } else {
+        spawnLeaves(path, stemHeight, duration);
+    }
+
+    spawnFlower(flowerType, tipX, tipY, stemAngle, duration, path);
+    finalizeStem(path);
+}
+
+function createStem(x,y){
+
+    const bottomY = getAppViewport().height;
+    beginPlant(x, bottomY);
+
+    const flowerType = pickFlowerType();
+    const hasHeavy = Math.random() < 0.2;
+
+    if (hasHeavy) {
+        spawnHeavyPlant(x, bottomY);
+    }
+
+    growStemFromBase(x, bottomY, x, y, flowerType, true);
+
+    if (flowerType === "tulip" && Math.random() < 0.1) {
+        const dupTipX = x + random(-24, 24);
+        const dupTipY = Math.max(
+            80,
+            Math.min(y + random(-40, 30), bottomY - 90)
+        );
+        growStemFromBase(x, bottomY, dupTipX, dupTipY, flowerType, false);
+    }
+
+    endPlant();
+}
+
+async function mountLoveLetter() {
+    const stage = document.getElementById("loveLetterStage");
+    if (!stage || stage.querySelector(".love-letter-art")) return;
+
+    const response = await fetch("images/loveletter.svg");
+    const svgText = await response.text();
+    const doc = new DOMParser().parseFromString(svgText, "image/svg+xml");
+    const svg = doc.documentElement;
+
+    svg.classList.add("love-letter-art");
+    svg.setAttribute("aria-hidden", "true");
+    svg.removeAttribute("width");
+    svg.removeAttribute("height");
+
+    const stampUrl = new URL("images/stamp.png", window.location.href).href;
+    const stampImage = svg.querySelector(".stamp-image");
+    if (stampImage) {
+        stampImage.setAttribute("href", stampUrl);
+        stampImage.setAttributeNS("http://www.w3.org/1999/xlink", "href", stampUrl);
+    }
+
+    stage.appendChild(svg);
+    ensureLetterCardGlassHost(stage);
+    setupLoveLetterClick(stage);
+}
+
+function ensureLetterCardGlassHost(stage) {
+    if (!stage || stage.querySelector(".letter-card-glass-host")) return;
+
+    const host = document.createElement("div");
+    host.className = "letter-card-glass-host";
+    host.setAttribute("aria-hidden", "true");
+
+    const pane = document.createElement("div");
+    pane.className = "letter-card-glass-pane";
+    host.appendChild(pane);
+
+    stage.insertBefore(host, stage.firstChild);
+    ensureLetterCardTextHost(stage);
+}
+
+function ensureLetterCardTextHost(stage) {
+    if (!stage || stage.querySelector(".letter-card-text-host")) return;
+
+    const host = document.createElement("div");
+    host.className = "letter-card-text-host";
+    host.innerHTML = `<article class="letter-card-copy" id="letterCopy">
+<p>Exactly a month ago, on a Saturday afternoon, we were bantering in your car after our bowling session when I asked you to be my girlfriend.</p>
+<p>I still remember vividly the times when I sat in the Lexus before the big day, ruminating about how I was going to ask you. I kept wondering what to say, when to say it, and how to say it. I quoted, "Ya Allah, I am so in love with this one girl, I don't want to leave her in a situationship that might leave her feelings in the dust." Scared that I might ask it wrong, I rehearsed my lines over and over, trying my best to prepare the perfect way to ask you out. Could you imagine I even added a few bunga kata to make it sound more polished? (Yes I did)</p>
+<p>When the moment finally came, I'll admit, my nervousness got the better of me (the excessive sweating didn't help at all). After all that preparation, I ended up asking one of the most direct questions in history;</p>
+<p>"Will you be my girlfriend?"</p>
+<p>After a while of witnessing you drown in extreme blush while swatting me with your rose plushie, you leaned in, hugged my left arm, and whispered something that made me the happiest man alive, it was a yes. I hope you know that was one of my most precious moments with you, my Princess Teha, on 23rd May 2026. If you're reading this, happy 1st monthsary, my love.</p>
+</article>`;
+
+    stage.appendChild(host);
+
+    const copy = host.querySelector(".letter-card-copy");
+    host.addEventListener("scroll", () => updateLetterCardFades(host), { passive: true });
+    setupLetterCardDragScroll(host);
+    setupLetterCardGlobalWheelScroll();
+}
+
+function getLetterWheelDelta(delta, deltaMode, axisSize) {
+    if (deltaMode === 1) return delta * 16;
+    if (deltaMode === 2) return delta * axisSize;
+    return delta;
+}
+
+function scrollLetterCardHost(host, deltaX, deltaY) {
+    if (!host) return false;
+
+    let scrolled = false;
+
+    if (deltaY && host.scrollHeight > host.clientHeight) {
+        host.scrollTop += deltaY;
+        scrolled = true;
+    }
+
+    if (deltaX && host.scrollWidth > host.clientWidth) {
+        host.scrollLeft += deltaX;
+        scrolled = true;
+    }
+
+    if (scrolled) updateLetterCardFades(host);
+    return scrolled;
+}
+
+function canLetterCardHostScroll(host) {
+    return (
+        host.classList.contains("is-visible") &&
+        (host.scrollHeight > host.clientHeight + 1 ||
+            host.scrollWidth > host.clientWidth + 1)
+    );
+}
+
+function getLetterCardTextHostAt(clientX, clientY) {
+    const host = document.querySelector(".letter-card-text-host.is-visible");
+    if (!host) return null;
+
+    const rect = host.getBoundingClientRect();
+    if (
+        clientX < rect.left ||
+        clientX > rect.right ||
+        clientY < rect.top ||
+        clientY > rect.bottom
+    ) {
+        return null;
+    }
+
+    return host;
+}
+
+function isLetterScrollInteractiveTarget(target) {
+    if (!(target instanceof Element)) return false;
+    return Boolean(target.closest("button, a, input, textarea, select, label"));
+}
+
+function setupLetterCardDragScroll(host) {
+    let dragging = false;
+    let startX = 0;
+    let startY = 0;
+    let startScrollLeft = 0;
+    let startScrollTop = 0;
+    let activePointerId = null;
+
+    const endDrag = (e) => {
+        if (!dragging || e.pointerId !== activePointerId) return;
+        dragging = false;
+        activePointerId = null;
+        host.classList.remove("is-drag-scrolling");
+        if (host.hasPointerCapture(e.pointerId)) {
+            host.releasePointerCapture(e.pointerId);
+        }
+    };
+
+    host.addEventListener(
+        "pointerdown",
+        (e) => {
+            if (!canLetterCardHostScroll(host) || e.button !== 0 || isLetterScrollInteractiveTarget(e.target)) {
+                return;
+            }
+
+            dragging = true;
+            activePointerId = e.pointerId;
+            startX = e.clientX;
+            startY = e.clientY;
+            startScrollLeft = host.scrollLeft;
+            startScrollTop = host.scrollTop;
+            host.classList.add("is-drag-scrolling");
+            host.setPointerCapture(e.pointerId);
+            e.preventDefault();
+        },
+        { passive: false }
+    );
+
+    host.addEventListener(
+        "pointermove",
+        (e) => {
+            if (!dragging || e.pointerId !== activePointerId) return;
+            host.scrollLeft = startScrollLeft - (e.clientX - startX);
+            host.scrollTop = startScrollTop - (e.clientY - startY);
+            updateLetterCardFades(host);
+            e.preventDefault();
+        },
+        { passive: false }
+    );
+
+    host.addEventListener("pointerup", endDrag);
+    host.addEventListener("pointercancel", endDrag);
+}
+
+function setupLetterCardGlobalWheelScroll() {
+    if (document.documentElement.dataset.letterWheelReady === "1") return;
+    document.documentElement.dataset.letterWheelReady = "1";
+
+    document.addEventListener(
+        "wheel",
+        (e) => {
+            const host = getLetterCardTextHostAt(e.clientX, e.clientY);
+            if (!host) return;
+
+            const deltaX = getLetterWheelDelta(e.deltaX, e.deltaMode, host.clientWidth);
+            const deltaY = getLetterWheelDelta(e.deltaY, e.deltaMode, host.clientHeight);
+            if (!scrollLetterCardHost(host, deltaX, deltaY)) return;
+
+            e.preventDefault();
+            e.stopPropagation();
+        },
+        { passive: false, capture: true }
+    );
+}
+
+function updateLetterCardFades(scroller) {
+    if (!scroller) return;
+
+    const fadeEdge = 28;
+    const maxScroll = scroller.scrollHeight - scroller.clientHeight;
+
+    if (maxScroll <= 0) {
+        scroller.style.setProperty("--fade-top", "0px");
+        scroller.style.setProperty("--fade-bottom", "0px");
+        return;
+    }
+
+    const topFade = Math.min(fadeEdge, scroller.scrollTop);
+    const bottomFade = Math.min(fadeEdge, maxScroll - scroller.scrollTop);
+
+    scroller.style.setProperty("--fade-top", `${topFade}px`);
+    scroller.style.setProperty("--fade-bottom", `${bottomFade}px`);
+}
+
+function animateLetterText(container, paragraphSources) {
+    let delay = 0.08;
+    const step = 0.017;
+    const paragraphPause = 0.22;
+    const paragraphs = Array.from(container.querySelectorAll("p"));
+
+    return paragraphs.reduce((chain, p, paragraphIndex) => {
+        return chain.then(
+            () =>
+                new Promise((resolve) => {
+                    const words = (paragraphSources[paragraphIndex] || "").split(/\s+/).filter(Boolean);
+
+                    words.forEach((word, index) => {
+                        if (index > 0) {
+                            const space = document.createElement("span");
+                            space.className = "letter-space";
+                            space.style.animationDelay = `${delay}s`;
+                            delay += step;
+                            p.appendChild(space);
+                        }
+
+                        const wordWrap = document.createElement("span");
+                        wordWrap.className = "letter-word";
+
+                        for (const char of word) {
+                            const span = document.createElement("span");
+                            span.className = "letter-char";
+                            span.textContent = char;
+                            span.style.animationDelay = `${delay}s`;
+                            delay += step;
+                            wordWrap.appendChild(span);
+                        }
+
+                        p.appendChild(wordWrap);
+                    });
+
+                    if (paragraphIndex < paragraphs.length - 1) {
+                        delay += paragraphPause;
+                    }
+
+                    requestAnimationFrame(resolve);
+                })
+        );
+    }, Promise.resolve()).then(() => {
+        const tailMs = delay * 1000 + 300;
+        return new Promise((resolve) => setTimeout(resolve, tailMs));
+    });
+}
+
+function animateSingleLetterParagraph(p, text) {
+    let delay = 0.08;
+    const step = 0.017;
+
+    return new Promise((resolve) => {
+        const words = text.split(/\s+/).filter(Boolean);
+
+        words.forEach((word, index) => {
+            if (index > 0) {
+                const space = document.createElement("span");
+                space.className = "letter-space";
+                space.style.animationDelay = `${delay}s`;
+                delay += step;
+                p.appendChild(space);
+            }
+
+            const wordWrap = document.createElement("span");
+            wordWrap.className = "letter-word";
+
+            for (const char of word) {
+                const span = document.createElement("span");
+                span.className = "letter-char";
+                span.textContent = char;
+                span.style.animationDelay = `${delay}s`;
+                delay += step;
+                wordWrap.appendChild(span);
+            }
+
+            p.appendChild(wordWrap);
+        });
+
+        const tailMs = delay * 1000 + 300;
+        setTimeout(resolve, tailMs);
+    });
+}
+
+let scenePanX = 0;
+
+function getScenePanX() {
+    return scenePanX;
+}
+
+function updateGalleryTitleVisibility() {
+    const host = document.getElementById("memoryGallery");
+    if (!host) return;
+
+    const revealAt = getAppViewport().width * 0.28;
+    host.classList.toggle("is-active", -scenePanX >= revealAt);
+}
+
+function setScenePanX(next) {
+    const max = getScenePanMax();
+    scenePanX = Math.max(-max, Math.min(0, next));
+    document.documentElement.style.setProperty("--scene-pan-x", `${scenePanX}px`);
+    updateGalleryTitleVisibility();
+    scheduleCullOffScreenPlants();
+}
+
+function isScenePanTarget(target) {
+    if (!(target instanceof Element)) return false;
+    return !target.closest(
+        ".letter-card-text-host, .music-bar, [data-music-toggle], [data-music-track], [data-music-scrubber], .memory-card-caption-input, button, a, input, textarea, select, label"
+    );
+}
+
+function canScenePan() {
+    return (
+        document.body.dataset.gardenUnlocked === "1" ||
+        document.body.dataset.tempGalleryPan === "1"
+    );
+}
+
+function enableTempGalleryPan() {
+    if (!TEMP_GALLERY_PAN) return;
+    if (document.body.dataset.tempGalleryPan === "1") return;
+
+    document.body.dataset.tempGalleryPan = "1";
+    document.body.classList.add("scene-pannable");
+    setupSceneHorizontalPan();
+}
+
+function setupSceneHorizontalPan() {
+    if (document.documentElement.dataset.scenePanReady === "1") return;
+    document.documentElement.dataset.scenePanReady = "1";
+
+    let dragging = false;
+    let startX = 0;
+    let startPanX = 0;
+    let activePointerId = null;
+    let panMoved = false;
+
+    const endDrag = (e) => {
+        if (!dragging || e.pointerId !== activePointerId) return;
+        dragging = false;
+        activePointerId = null;
+        document.body.classList.remove("scene-pan-dragging");
+        if (panMoved) {
+            document.body.dataset.scenePanMoved = "1";
+            requestAnimationFrame(() => {
+                document.body.dataset.scenePanMoved = "0";
+            });
+        }
+    };
+
+    document.addEventListener(
+        "pointerdown",
+        (e) => {
+            if (!canScenePan()) return;
+            if (e.button !== 0 || !isScenePanTarget(e.target)) return;
+
+            dragging = true;
+            panMoved = false;
+            activePointerId = e.pointerId;
+            startX = e.clientX;
+            startPanX = scenePanX;
+            document.body.setPointerCapture(e.pointerId);
+        },
+        { passive: true }
+    );
+
+    document.addEventListener(
+        "pointermove",
+        (e) => {
+            if (!dragging || e.pointerId !== activePointerId) return;
+
+            const dx = e.clientX - startX;
+            if (Math.abs(dx) <= 4) return;
+
+            panMoved = true;
+            document.body.classList.add("scene-pan-dragging");
+            setScenePanX(startPanX + dx);
+            e.preventDefault();
+        },
+        { passive: false }
+    );
+
+    document.addEventListener("pointerup", endDrag);
+    document.addEventListener("pointercancel", endDrag);
+
+    document.addEventListener(
+        "wheel",
+        (e) => {
+            if (!canScenePan()) return;
+            if (getLetterCardTextHostAt(e.clientX, e.clientY)) return;
+            if (!isScenePanTarget(e.target)) return;
+
+            const deltaX = getLetterWheelDelta(
+                e.deltaX,
+                e.deltaMode,
+                getAppViewport().width
+            );
+            if (!deltaX) return;
+
+            setScenePanX(scenePanX - deltaX);
+            e.preventDefault();
+        },
+        { passive: false, capture: true }
+    );
+}
+
+function enableGardenInteraction() {
+    if (document.body.dataset.gardenUnlocked === "1") return;
+    document.body.dataset.gardenUnlocked = "1";
+    document.body.classList.remove("letter-focus");
+    document.body.classList.add("scene-pannable");
+    setupSceneHorizontalPan();
+}
+
+function shouldSpawnGardenStem(target) {
+    if (!(target instanceof Element)) return true;
+    return !target.closest(
+        ".letter-card-text-host, .music-bar, [data-music-toggle], [data-music-track], [data-music-scrubber]"
+    );
+}
+
+function revealTapAroundHint(host, copy) {
+    if (copy.querySelector(".letter-tap-hint")) return;
+
+    const hint = document.createElement("p");
+    hint.className = "letter-tap-hint";
+    copy.appendChild(hint);
+
+    void animateSingleLetterParagraph(
+        hint,
+        "TAP AROUND THE SCREEN SAYANG"
+    ).then(() => {
+        updateLetterCardFades(host);
+        enableGardenInteraction();
+    });
+}
+
+function revealLetterYesButton(letterArt) {
+    const stage = letterArt?.closest(".love-letter-stage");
+    const host = stage?.querySelector(".letter-card-text-host");
+    const copy = host?.querySelector(".letter-card-copy");
+    if (!host || !copy || copy.querySelector(".letter-yes-button")) return;
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "letter-yes-button";
+    button.textContent = "YES!!!!";
+    button.addEventListener("click", () => {
+        if (button.dataset.picked === "1") return;
+        button.dataset.picked = "1";
+        button.disabled = true;
+        revealTapAroundHint(host, copy);
+    });
+    copy.appendChild(button);
+
+    requestAnimationFrame(() => {
+        button.classList.add("is-visible");
+        updateLetterCardFades(host);
+    });
+}
+
+function revealLetterCardText(letterArt) {
+    const stage = letterArt?.closest(".love-letter-stage");
+    const host = stage?.querySelector(".letter-card-text-host");
+    const copy = host?.querySelector(".letter-card-copy");
+    if (!host || !copy || copy.dataset.animated === "1") return;
+
+    const paragraphSources = Array.from(copy.querySelectorAll("p")).map((p) => {
+        const text = p.textContent.trim();
+        p.textContent = "";
+        return text;
+    });
+
+    copy.dataset.animated = "1";
+    syncLetterCardGlassHost(letterArt);
+    growLetterCardSideFlowers(letterArt);
+    host.classList.add("is-visible");
+    void animateLetterText(copy, paragraphSources).then(() => {
+        updateLetterCardFades(host);
+        revealLetterYesButton(letterArt);
+    });
+}
+
+function ensureLetterCardFlowersSvg() {
+    const svg = document.getElementById("letterCardFlowers");
+    if (!svg) return null;
+
+    const worldW = getWorldWidth();
+    const { height } = getAppViewport();
+    svg.setAttribute("width", String(worldW));
+    svg.setAttribute("height", String(height));
+    svg.setAttribute("viewBox", `0 0 ${worldW} ${height}`);
+    return svg;
+}
+
+function pickCardFlowerTipYs(bottomY, cardRect, count = 3) {
+    const minStemH = Math.max(168, Math.min(cardRect.height * 0.34, 215));
+    const maxStemH = Math.max(minStemH + 55, Math.min(cardRect.height * 0.52, 295));
+    const minGap = 52;
+    const tipYs = [];
+
+    for (let i = 0; i < 80 && tipYs.length < count; i++) {
+        const stemH = random(minStemH, maxStemH);
+        const tipY = bottomY - stemH;
+        if (tipYs.every((y) => Math.abs(y - tipY) >= minGap)) {
+            tipYs.push(tipY);
+        }
+    }
+
+    while (tipYs.length < count) {
+        const stemH = minStemH + tipYs.length * (minGap * 0.9);
+        tipYs.push(bottomY - stemH);
+    }
+
+    return tipYs.sort((a, b) => a - b);
+}
+
+function pickCardFlowerTypes(larkspurIndex) {
+    const pool = ["rose", "desert", "tulip", "daisy"];
+    const types = [null, null, null];
+    types[larkspurIndex] = "larkspur";
+
+    const otherSlots = [0, 1, 2].filter((i) => i !== larkspurIndex);
+    const firstType = pool[Math.floor(Math.random() * pool.length)];
+    types[otherSlots[0]] = firstType;
+
+    const remaining = pool.filter((type) => type !== firstType);
+    types[otherSlots[1]] =
+        remaining[Math.floor(Math.random() * remaining.length)];
+
+    return types;
+}
+
+function pickCardFlowerBaseX(side, cardRect, usedBases) {
+    const minOut = 42;
+    const maxOut = 90;
+    const minSep = 38;
+
+    for (let i = 0; i < 40; i++) {
+        const outward = random(minOut, maxOut);
+        const baseX =
+            side === "left"
+                ? cardRect.left - outward
+                : cardRect.right + outward;
+
+        if (usedBases.every((x) => Math.abs(x - baseX) >= minSep)) {
+            return baseX;
+        }
+    }
+
+    const outward = minOut + usedBases.length * minSep * 0.55;
+    return side === "left"
+        ? cardRect.left - outward
+        : cardRect.right + outward;
+}
+
+function getCardFlowerStemGeometry(side, baseX, role) {
+    const outerLean = random(20, 36);
+    const innerLean = random(10, 24);
+
+    if (side === "left") {
+        if (role === "inner") {
+            return {
+                tipX: baseX + innerLean,
+                bendAway: 1,
+            };
+        }
+        return {
+            tipX: baseX - outerLean,
+            bendAway: -1,
+        };
+    }
+
+    if (role === "inner") {
+        return {
+            tipX: baseX - innerLean,
+            bendAway: -1,
+        };
+    }
+
+    return {
+        tipX: baseX + outerLean,
+        bendAway: 1,
+    };
+}
+
+function growCardSideStem(svg, baseX, tipX, tipY, bottomY, flowerType, bendAway, withHeavy = false) {
+    if (bottomY - tipY < 30) return;
+
+    beginCardPlant(svg, baseX, bottomY);
+    if (withHeavy) {
+        spawnHeavyPlant(baseX, bottomY, bendAway);
+    }
+    growStemFromBase(baseX, bottomY, tipX, tipY, flowerType, false, bendAway);
+    if (currentPlant) {
+        registerPlant(currentPlant);
+    }
+    endCardPlant();
+}
+
+function growLetterCardSideFlowers(letterArt) {
+    const stage = letterArt?.closest(".love-letter-stage");
+    const card = letterArt?.querySelector(".letter-card");
+    if (!stage || !card || stage.dataset.cardFlowersGrown === "1") return;
+
+    const cardRect = card.getBoundingClientRect();
+    if (cardRect.width < 1 || cardRect.height < 1) return;
+
+    const svg = ensureLetterCardFlowersSvg();
+    if (!svg) return;
+
+    stage.dataset.cardFlowersGrown = "1";
+
+    const bottomY = getAppViewport().height;
+    const leftCount = Math.random() < 0.5 ? 2 : 1;
+    const rightCount = 3 - leftCount;
+    const doubleSide = leftCount === 2 ? "left" : "right";
+    const singleSide = doubleSide === "left" ? "right" : "left";
+    const tipYs = pickCardFlowerTipYs(bottomY, cardRect, 3);
+
+    const sides = [];
+    for (let i = 0; i < leftCount; i++) sides.push("left");
+    for (let i = 0; i < rightCount; i++) sides.push("right");
+
+    const doubleIndices = sides
+        .map((side, index) => (side === doubleSide ? index : -1))
+        .filter((index) => index >= 0);
+    const larkspurIndex =
+        doubleIndices[Math.floor(Math.random() * doubleIndices.length)];
+    const types = pickCardFlowerTypes(larkspurIndex);
+
+    const singleIndex = sides.findIndex((side) => side === singleSide);
+    const tallestTipIndex = tipYs.indexOf(Math.min(...tipYs));
+    if (singleIndex >= 0 && tallestTipIndex >= 0 && singleIndex !== tallestTipIndex) {
+        [tipYs[singleIndex], tipYs[tallestTipIndex]] = [
+            tipYs[tallestTipIndex],
+            tipYs[singleIndex],
+        ];
+    }
+
+    const usedBases = [];
+    const doubleSideCounts = { left: 0, right: 0 };
+
+    sides.forEach((side, index) => {
+        const baseX = pickCardFlowerBaseX(side, cardRect, usedBases);
+        usedBases.push(baseX);
+
+        const role =
+            side === doubleSide
+                ? doubleSideCounts[side]++ === 0
+                    ? "outer"
+                    : "inner"
+                : "outer";
+        const { tipX, bendAway } = getCardFlowerStemGeometry(side, baseX, role);
+        const tipY = tipYs[index];
+        const delay = index * random(220, 380);
+
+        setTimeout(() => {
+            growCardSideStem(
+                svg,
+                baseX,
+                tipX,
+                tipY,
+                bottomY,
+                types[index],
+                bendAway,
+                index === singleIndex
+            );
+        }, delay);
+    });
+}
+
+function syncLetterCardGlassHost(letterArt) {
+    const stage = letterArt?.closest(".love-letter-stage");
+    const card = letterArt?.querySelector(".letter-card");
+    const glassHost = stage?.querySelector(".letter-card-glass-host");
+    const textHost = stage?.querySelector(".letter-card-text-host");
+    if (!stage || !card || !glassHost) return;
+
+    const stageRect = stage.getBoundingClientRect();
+    const cardRect = card.getBoundingClientRect();
+    if (cardRect.width < 1 || cardRect.height < 1) {
+        glassHost.classList.remove("is-active");
+        return;
+    }
+
+    const overlayStyle = {
+        left: `${cardRect.left - stageRect.left}px`,
+        top: `${cardRect.top - stageRect.top}px`,
+        width: `${cardRect.width}px`,
+        height: `${cardRect.height}px`,
+        borderRadius: `${(2.5 / 253.17) * cardRect.width}px`,
+    };
+
+    Object.assign(glassHost.style, overlayStyle);
+    glassHost.classList.add("is-active");
+
+    if (textHost) {
+        Object.assign(textHost.style, overlayStyle);
+        textHost.style.fontSize = `${cardRect.width * 0.042}px`;
+        updateLetterCardFades(textHost);
+    }
+}
+
+function runLetterCardGlassSync(letterArt) {
+    const wrap = letterArt?.querySelector(".letter-card-wrap");
+    if (!wrap) return;
+
+    wrap.dataset.glassSyncing = "1";
+
+    const loop = () => {
+        syncLetterCardGlassHost(letterArt);
+        if (wrap.dataset.glassSyncing === "1") {
+            wrap._glassSyncRaf = requestAnimationFrame(loop);
+        }
+    };
+
+    if (wrap._glassSyncRaf) cancelAnimationFrame(wrap._glassSyncRaf);
+    loop();
+}
+
+function stopLetterCardGlassSync(letterArt) {
+    const wrap = letterArt?.querySelector(".letter-card-wrap");
+    if (!wrap) return;
+
+    wrap.dataset.glassSyncing = "0";
+    if (wrap._glassSyncRaf) cancelAnimationFrame(wrap._glassSyncRaf);
+    syncLetterCardGlassHost(letterArt);
+}
+
+function setupLoveLetterClick(stage) {
+    const letterArt = stage?.querySelector(".love-letter-art");
+    if (!stage || !letterArt || letterArt.dataset.clickReady) return;
+    letterArt.dataset.clickReady = "1";
+
+    letterArt.addEventListener("pointerdown", (e) => {
+        if (!stage.classList.contains("is-interactive")) return;
+
+        const heart = letterArt.querySelector(".love-heart-wrap");
+        if (!heart || heart.classList.contains("is-faded")) return;
+
+        heart.classList.add("is-peeled");
+        e.stopPropagation();
+    });
+
+    letterArt.addEventListener("click", (e) => {
+        if (!stage.classList.contains("is-interactive")) return;
+
+        const heart = letterArt.querySelector(".love-heart-wrap");
+        if (!heart || heart.classList.contains("is-faded")) return;
+
+        e.stopPropagation();
+        heart.classList.add("is-faded");
+
+        heart.addEventListener(
+            "transitionend",
+            async (ev) => {
+                if (ev.propertyName !== "opacity") return;
+                await openEnvelopeFlaps(letterArt);
+            },
+            { once: true }
+        );
+    });
+}
+
+async function openEnvelopeFlaps(letterArt) {
+    if (!letterArt || letterArt.classList.contains("envelope-open")) return;
+
+    letterArt.classList.add("envelope-open");
+
+    const flapOrder = ["flap-right", "flap-bottom", "flap-left", "flap-top"];
+    const flapPause = 200;
+
+    for (const flapClass of flapOrder) {
+        const flap = letterArt.querySelector(`.${flapClass}`);
+        if (!flap) continue;
+
+        flap.classList.add("is-open");
+        await waitForFlapToOpen(flap);
+        flap.classList.add("is-vanished");
+
+        if (flapClass !== "flap-top") {
+            await wait(flapPause);
+        }
+    }
+
+    await stretchLetterCard(letterArt);
+}
+
+function waitForFlapToOpen(flap) {
+    const target = flap.classList.contains("flap-bottom")
+        ? flap.querySelector(".flap-bottom-fold")
+        : flap.querySelector(":scope > *");
+
+    if (!target) return Promise.resolve();
+
+    return new Promise((resolve) => {
+        const finish = () => resolve();
+
+        target.addEventListener(
+            "transitionend",
+            (e) => {
+                if (e.propertyName === "transform") finish();
+            },
+            { once: true }
+        );
+
+        setTimeout(finish, 640);
+    });
+}
+
+const CARD_EXTEND_UP_MS = 2100;
+const CARD_EXTEND_DOWN_MS = 2100;
+const ENVELOPE_RETRACT_MS = 1800;
+
+function stretchLetterCard(letterArt) {
+    const card = letterArt?.querySelector(".letter-card");
+    if (!card) return;
+
+    letterArt.classList.add("is-stretching-card", "is-retracting-envelope");
+    runLetterCardGlassSync(letterArt);
+
+    setTimeout(() => {
+        const wrap = letterArt.querySelector(".letter-card-wrap");
+        if (!wrap || wrap.dataset.cardUpBaked === "1") return;
+        bakeLetterCardUpwardStretch(letterArt);
+        wrap.dataset.cardUpBaked = "1";
+        stopLetterCardGlassSync(letterArt);
+    }, CARD_EXTEND_UP_MS);
+
+    retractLoveLetterIntro();
+}
+
+function bakeLetterCardUpwardStretch(letterArt) {
+    const wrap = letterArt?.querySelector(".letter-card-wrap");
+    const card = wrap?.querySelector(".letter-card");
+    if (!wrap || !card) return;
+
+    const baseY = 2.715;
+    const baseH = 175.57;
+    const upScale = 1.65;
+    const bottomY = baseY + baseH;
+    const visualH = baseH * upScale;
+    const visualTopY = bottomY - visualH;
+
+    wrap.querySelectorAll(".letter-card, .letter-card-highlight, .letter-card-border, .letter-card-texture").forEach((layer) => {
+        layer.setAttribute("y", String(visualTopY));
+        layer.setAttribute("height", String(visualH));
+    });
+}
+
+function extendLetterCardDown(letterArt) {
+    const card = letterArt?.querySelector(".letter-card");
+    const wrap = letterArt?.querySelector(".letter-card-wrap");
+    if (!card) return Promise.resolve();
+
+    if (wrap && wrap.dataset.cardUpBaked !== "1") {
+        bakeLetterCardUpwardStretch(letterArt);
+        wrap.dataset.cardUpBaked = "1";
+    }
+
+    runLetterCardGlassSync(letterArt);
+    revealLetterCardText(letterArt);
+    letterArt.classList.add("is-extending-card-down");
+
+    return waitForCssAnimation(card, "letter-card-extend-down", CARD_EXTEND_DOWN_MS).then(
+        () => stopLetterCardGlassSync(letterArt)
+    );
+}
+
+async function retractLoveLetterIntro() {
+    const state = loveLetterIntroState;
+    if (!state || state.retracting) return;
+    state.retracting = true;
+
+    const { path, bud, budWrap, introSvg, letterStage, letterArt } = state;
+
+    letterStage?.classList.remove("is-interactive");
+
+    await wait(CARD_EXTEND_UP_MS + ENVELOPE_RETRACT_MS);
+
+    const wrap = letterArt?.querySelector(".letter-card-wrap");
+    if (wrap && wrap.dataset.cardUpBaked !== "1") {
+        bakeLetterCardUpwardStretch(letterArt);
+        wrap.dataset.cardUpBaked = "1";
+    }
+
+    stopLetterCardGlassSync(letterArt);
+
+    await Promise.all([
+        budWrap
+            ? Promise.all([retractCircle(bud, 500), fadeSVGElement(budWrap, 500)])
+            : Promise.resolve(),
+        staggerRetractLeaves(introSvg),
+        retractStem(path),
+    ]);
+
+    await extendLetterCardDown(letterArt);
+}
+
+function growLoveLetterIntro() {
+    const introSvg = document.getElementById("letterIntro");
+    const letterArt = document.querySelector(".love-letter-art");
+    const letterStage = document.getElementById("loveLetterStage");
+    if (!introSvg || !letterArt) return;
+
+    const { width: viewW, height: viewH } = getAppViewport();
+    updateWorldLayout();
+    introSvg.setAttribute("width", String(getWorldWidth()));
+    introSvg.setAttribute("height", String(viewH));
+    introSvg.setAttribute("viewBox", `0 0 ${getWorldWidth()} ${viewH}`);
+
+    const bottomY = viewH;
+    const centerX = viewW / 2;
+    const centerY = viewH / 2;
+    const tipX = centerX;
+    const tipY = centerY;
+    const stemHeight = bottomY - tipY;
+
+    if (stemHeight < 40) return;
+
+    const bendDirection = Math.random() > 0.5 ? 1 : -1;
+    const bendAmount =
+        random(stemHeight * 0.05, stemHeight * 0.11) * bendDirection;
+    const controlY = (bottomY + tipY) * 0.5;
+
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute(
+        "d",
+        `M ${centerX} ${bottomY} Q ${centerX + bendAmount} ${controlY} ${tipX} ${tipY}`
+    );
+    path.classList.add("stem");
+
+    const length = path.getTotalLength();
+    const duration = Math.min(5000, Math.max(2200, length * 3));
+
+    path.style.setProperty("--length", length);
+    path.style.setProperty("--duration", `${duration}ms`);
+
+    introSvg.appendChild(path);
+    spawnLeaves(path, stemHeight, duration, introSvg);
+
+    path.addEventListener(
+        "animationend",
+        () => {
+            path.style.strokeDasharray = "none";
+            path.style.strokeDashoffset = "0";
+            path.style.animation = "none";
+
+            const budWrap = document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "g"
+            );
+            budWrap.classList.add("calyx-glow");
+
+            const bud = document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "circle"
+            );
+            bud.setAttribute("cx", tipX);
+            bud.setAttribute("cy", tipY);
+            bud.setAttribute("fill", "#dff5e6");
+            bud.setAttribute("r", "0");
+            budWrap.appendChild(bud);
+            introSvg.appendChild(budWrap);
+
+            growCircleFromZero(bud, 9, 500);
+
+            loveLetterIntroState = {
+                path,
+                bud,
+                budWrap,
+                introSvg,
+                tipY,
+                bottomY,
+                letterStage,
+                letterArt,
+            };
+
+            growCircleFromZero(bud, 16, 500, () => {
+                letterArt.addEventListener(
+                    "animationend",
+                    (e) => {
+                        if (e.animationName !== "letter-bloom") return;
+                        letterArt.classList.add("is-bloomed");
+                        letterArt.style.transform = "none";
+                        letterArt.style.animation = "none";
+                    },
+                    { once: true }
+                );
+                letterArt.classList.add("is-blooming");
+                letterStage?.classList.add("is-interactive");
+            });
+        },
+        { once: true }
+    );
+}
+
+document.addEventListener(
+    "click",
+    (e) => {
+        if (document.body.classList.contains("letter-focus")) return;
+        if (document.body.dataset.scenePanMoved === "1") return;
+        if (!shouldSpawnGardenStem(e.target)) return;
+
+        createStem(e.clientX - getScenePanX(), e.clientY);
+    }
+);
+
+document.addEventListener("copy", (e) => e.preventDefault());
+document.addEventListener("cut", (e) => e.preventDefault());
+document.addEventListener("paste", (e) => e.preventDefault());
+document.addEventListener("selectstart", (e) => e.preventDefault());
+document.addEventListener("contextmenu", (e) => e.preventDefault());
+document.addEventListener("dragstart", (e) => e.preventDefault());
+
+const sky = document.getElementById("sky");
+
+for (let i = 0; i < 45; i++) {
+    const star = document.createElement("div");
+    star.className = "star";
+    star.style.left = `${Math.random() * 100}%`;
+    star.style.top = `${Math.random() * 38}%`;
+    const size = 1 + Math.random() * 2.5;
+    star.style.width = `${size}px`;
+    star.style.height = `${size}px`;
+    star.style.setProperty("--dur", `${2 + Math.random() * 3}s`);
+    star.style.setProperty("--delay", `${Math.random() * 4}s`);
+    sky.appendChild(star);
+}
+
+if (document.body.classList.contains("letter-focus")) {
+    mountLoveLetter().then(() => growLoveLetterIntro());
+}
+
+const MUSIC_TRACK = { x: 53, y: 9, width: 99, height: 2 };
+const FLOWER_START_INSET = 2;
+const FLOWER_END_INSET = 2;
+
+async function initMusicBar() {
+    const host = document.getElementById("musicBar");
+    if (!host || host.dataset.ready === "1") return;
+
+    const audio = document.createElement("audio");
+    audio.preload = "auto";
+    audio.playsInline = true;
+    audio.loop = true;
+    audio.src = "audio/song.mp3";
+    host.appendChild(audio);
+    audio.load();
+
+    if (!host.dataset.gestureArmed) {
+        host.dataset.gestureArmed = "1";
+        document.addEventListener(
+            "pointerdown",
+            () => {
+                void audio.play().catch(() => {});
+            },
+            { capture: true, once: true }
+        );
+    }
+
+    let svg;
+    try {
+        const response = await fetch("images/musicbar.svg");
+        if (!response.ok) return;
+        const svgText = await response.text();
+        const doc = new DOMParser().parseFromString(svgText, "image/svg+xml");
+        svg = doc.documentElement;
+    } catch {
+        return;
+    }
+
+    const root = svg.querySelector("g[filter]");
+    const track = svg.querySelector('rect[x="53"][y="9"]');
+    const flower = svg.querySelector('g[clip-path="url(#clip0_330_17)"]');
+    const playBtn = root?.querySelector('path[d^="M109.282"]');
+    const pauseBars = root
+        ? Array.from(root.querySelectorAll("rect")).filter((rect) => {
+              const y = parseFloat(rect.getAttribute("y") || "");
+              const transform = rect.getAttribute("transform") || "";
+              return y === 19 && transform.includes("rotate(90");
+          })
+        : [];
+
+    if (!track || !flower || !playBtn || !pauseBars.length) return;
+
+    const barBg = root?.querySelector('rect[x="4"][width="155"][height="34"]');
+    if (barBg) {
+        barBg.setAttribute("fill-opacity", "0");
+    }
+
+    host.dataset.ready = "1";
+    track.setAttribute("data-music-track", "1");
+    track.setAttribute("fill-opacity", "0.28");
+
+    const fill = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    fill.setAttribute("x", String(MUSIC_TRACK.x));
+    fill.setAttribute("y", String(MUSIC_TRACK.y));
+    fill.setAttribute("height", String(MUSIC_TRACK.height));
+    fill.setAttribute("rx", "1");
+    fill.setAttribute("fill", "#FFCFFA");
+    fill.setAttribute("width", "0");
+    track.after(fill);
+
+    const scrubber = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    scrubber.setAttribute("id", "music-scrubber");
+    scrubber.setAttribute("data-music-scrubber", "1");
+    flower.parentNode.insertBefore(scrubber, flower);
+    scrubber.appendChild(flower);
+
+    const hitArea = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    hitArea.setAttribute("x", String(MUSIC_TRACK.x));
+    hitArea.setAttribute("y", String(MUSIC_TRACK.y - 8));
+    hitArea.setAttribute("width", String(MUSIC_TRACK.width));
+    hitArea.setAttribute("height", "18");
+    hitArea.setAttribute("fill", "transparent");
+    hitArea.setAttribute("data-music-track", "1");
+    fill.after(hitArea);
+
+    playBtn.setAttribute("data-music-play", "1");
+    pauseBars.forEach((bar) => bar.setAttribute("data-music-pause", "1"));
+
+    const controls = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    controls.setAttribute("id", "music-controls");
+
+    playBtn.remove();
+    const pauseGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    pauseBars.forEach((bar) => {
+        bar.remove();
+        pauseGroup.appendChild(bar);
+    });
+
+    controls.appendChild(playBtn);
+    controls.appendChild(pauseGroup);
+    root.appendChild(controls);
+
+    const glassLayer = document.createElement("div");
+    glassLayer.className = "music-bar-glass-layer";
+    glassLayer.setAttribute("aria-hidden", "true");
+    host.appendChild(glassLayer);
+    host.appendChild(svg);
+
+    const playBox = playBtn.getBBox();
+    const playCenterX = playBox.x + playBox.width / 2;
+    const playCenterY = playBox.y + playBox.height / 2;
+    const pauseBox = pauseGroup.getBBox();
+    pauseGroup.setAttribute(
+        "transform",
+        `translate(${playCenterX - (pauseBox.x + pauseBox.width / 2)} ${playCenterY - (pauseBox.y + pauseBox.height / 2)})`
+    );
+
+    const trackCenterX = MUSIC_TRACK.x + MUSIC_TRACK.width / 2;
+    const trackBottomY = MUSIC_TRACK.y + MUSIC_TRACK.height;
+    controls.setAttribute(
+        "transform",
+        `translate(${trackCenterX - playCenterX} ${trackBottomY + 7 - playBox.y})`
+    );
+
+    const controlHit = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    const hitPad = 4;
+    controlHit.setAttribute("x", String(playBox.x - hitPad));
+    controlHit.setAttribute("y", String(playBox.y - hitPad));
+    controlHit.setAttribute("width", String(playBox.width + hitPad * 2));
+    controlHit.setAttribute("height", String(playBox.height + hitPad * 2));
+    controlHit.setAttribute("fill", "transparent");
+    controlHit.setAttribute("data-music-toggle", "1");
+    controls.appendChild(controlHit);
+
+    const flowerCenterX = scrubber.getBBox().x + scrubber.getBBox().width / 2;
+
+    const scrubberBox = scrubber.getBBox();
+    const scrubberPad = 8;
+    const scrubberHit = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    scrubberHit.setAttribute("x", String(scrubberBox.x - scrubberPad));
+    scrubberHit.setAttribute("y", String(scrubberBox.y - scrubberPad));
+    scrubberHit.setAttribute("width", String(scrubberBox.width + scrubberPad * 2));
+    scrubberHit.setAttribute("height", String(scrubberBox.height + scrubberPad * 2));
+    scrubberHit.setAttribute("fill", "transparent");
+    scrubberHit.setAttribute("data-music-scrubber", "1");
+    scrubber.appendChild(scrubberHit);
+
+    let draggingScrubber = false;
+    let resumeAfterDrag = false;
+
+    function setPlayingUI(playing) {
+        playBtn.style.display = playing ? "none" : "block";
+        pauseGroup.style.display = playing ? "block" : "none";
+    }
+
+    function setProgress(ratio) {
+        const progress = Math.max(0, Math.min(1, ratio));
+        const travel = MUSIC_TRACK.width - FLOWER_START_INSET - FLOWER_END_INSET;
+        const x = MUSIC_TRACK.x + FLOWER_START_INSET + progress * travel;
+        fill.setAttribute("width", String(FLOWER_START_INSET + progress * travel));
+        scrubber.setAttribute("transform", `translate(${x - flowerCenterX}, 0)`);
+    }
+
+    function clientXToRatio(clientX) {
+        const pt = svg.createSVGPoint();
+        pt.x = clientX;
+        pt.y = 0;
+        const ctm = svg.getScreenCTM();
+        if (!ctm) return 0;
+        const svgX = pt.matrixTransform(ctm.inverse()).x;
+        return Math.max(0, Math.min(1, (svgX - MUSIC_TRACK.x) / MUSIC_TRACK.width));
+    }
+
+    function seekFromClientX(clientX) {
+        if (!audio.duration) return;
+        const ratio = clientXToRatio(clientX);
+        audio.currentTime = ratio * audio.duration;
+        setProgress(ratio);
+    }
+
+    function endScrubDrag(e) {
+        if (!draggingScrubber) return;
+        draggingScrubber = false;
+        host.classList.remove("is-scrubbing");
+        if (host.hasPointerCapture(e.pointerId)) {
+            host.releasePointerCapture(e.pointerId);
+        }
+        if (resumeAfterDrag && audio.paused) {
+            void playAudio();
+        }
+    }
+
+    async function playAudio() {
+        try {
+            await audio.play();
+        } catch {
+            /* blocked until user gesture */
+        }
+    }
+
+    function togglePlayback() {
+        if (audio.paused) {
+            void playAudio();
+        } else {
+            audio.pause();
+        }
+    }
+
+    function isMusicScrubber(target) {
+        if (!(target instanceof Element)) return false;
+        return Boolean(target.closest("[data-music-scrubber]"));
+    }
+
+    function isMusicControl(target) {
+        if (!(target instanceof Element)) return false;
+        return Boolean(
+            target.closest("[data-music-toggle]") ||
+            target.closest("[data-music-play]") ||
+            target.closest("[data-music-pause]") ||
+            target === playBtn ||
+            target === pauseGroup ||
+            pauseBars.includes(target)
+        );
+    }
+
+    function isMusicTrack(target) {
+        if (!(target instanceof Element)) return false;
+        return Boolean(
+            target.closest("[data-music-track]") ||
+            target === hitArea ||
+            target === track
+        );
+    }
+
+    host.addEventListener(
+        "pointerdown",
+        (e) => {
+            e.stopPropagation();
+
+            if (isMusicControl(e.target)) {
+                e.preventDefault();
+                togglePlayback();
+                return;
+            }
+
+            if (isMusicScrubber(e.target)) {
+                e.preventDefault();
+                draggingScrubber = true;
+                resumeAfterDrag = !audio.paused;
+                host.classList.add("is-scrubbing");
+                host.setPointerCapture(e.pointerId);
+                seekFromClientX(e.clientX);
+                return;
+            }
+
+            if (isMusicTrack(e.target)) {
+                e.preventDefault();
+                seekFromClientX(e.clientX);
+                if (audio.paused) void playAudio();
+            }
+        },
+        true
+    );
+
+    host.addEventListener("pointermove", (e) => {
+        if (!draggingScrubber) return;
+        e.preventDefault();
+        seekFromClientX(e.clientX);
+    });
+
+    host.addEventListener("pointerup", endScrubDrag);
+    host.addEventListener("pointercancel", endScrubDrag);
+
+    audio.addEventListener("play", () => setPlayingUI(true));
+    audio.addEventListener("pause", () => setPlayingUI(false));
+    audio.addEventListener("ended", () => {
+        setPlayingUI(false);
+        setProgress(1);
+    });
+
+    audio.addEventListener("timeupdate", () => {
+        if (draggingScrubber || !audio.duration) return;
+        setProgress(audio.currentTime / audio.duration);
+    });
+
+    setPlayingUI(!audio.paused);
+    setProgress(audio.duration ? audio.currentTime / audio.duration : 0);
+}
+
+void initMusicBar();
+
+</script>
+
+</body>
+</html>
