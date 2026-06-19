@@ -711,6 +711,14 @@ body.scene-pannable .love-letter-stage{
         0 10px 28px rgba(0, 0, 0, 0.22);
     padding:9px;
     box-sizing:border-box;
+    opacity:0;
+    visibility:hidden;
+    transform:translate3d(30px, 14px, 0) scale(0.93);
+    transition:
+        opacity 1.15s ease-out,
+        visibility 1.15s ease-out,
+        transform 1.15s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change:opacity, transform;
 }
 
 .memory-card-photo-wrap{
@@ -2666,12 +2674,14 @@ function finalizeGalleryLayout() {
     if (hasLockedGalleryLayout() && applyLockedGalleryLayout()) {
         remeasureGalleryWidth();
         updateSceneZoom();
+        updateGalleryCardReveal();
         return;
     }
 
     fitGalleryVerticalBounds();
     remeasureGalleryWidth();
     updateSceneZoom();
+    updateGalleryCardReveal();
 }
 
 function scheduleGalleryLayoutFinalize() {
@@ -2961,6 +2971,7 @@ function mountMemoryGallery() {
         applyLockedGalleryLayout();
         remeasureGalleryWidth();
         updateSceneZoom();
+        updateGalleryCardReveal();
     }
 }
 
@@ -4927,11 +4938,72 @@ function updateGalleryTitleVisibility() {
     host.classList.toggle("is-active", -scenePanX >= revealAt);
 }
 
+function galleryRevealFade(t) {
+    const x = clamp(t, 0, 1);
+    return x * x * (3 - 2 * x);
+}
+
+function updateGalleryCardReveal() {
+    const inner = document.querySelector(".memory-gallery-inner");
+    if (!inner) return;
+
+    const zoom = getSceneZoom();
+    const pan = scenePanX;
+    const appW = getAppViewport().width;
+    const viewLeft = -pan / zoom;
+    const viewRight = viewLeft + appW;
+    const galleryOrigin = appW;
+    const fadeBand = clamp(appW * 0.055, 84, 120);
+    const enterLead = fadeBand * 0.5;
+    const exitTail = fadeBand * 0.5;
+
+    inner.querySelectorAll(".memory-card").forEach((card) => {
+        const cardLeft = galleryOrigin + (parseFloat(card.style.left) || 0);
+        const cardWidth = card.offsetWidth;
+        const cardRight = cardLeft + cardWidth;
+
+        if (cardWidth <= 0) return;
+
+        let enterFade = 0;
+        let exitFade = 0;
+
+        const inRevealZone =
+            cardRight > viewLeft - exitTail && cardLeft < viewRight + enterLead;
+
+        if (inRevealZone) {
+            enterFade = galleryRevealFade((viewRight + enterLead - cardLeft) / fadeBand);
+            exitFade = galleryRevealFade((cardRight - (viewLeft - exitTail)) / fadeBand);
+        }
+
+        const reveal = Math.min(enterFade, exitFade);
+        const opacity = reveal;
+
+        const translateX = (1 - enterFade) * 30 + (1 - exitFade) * -22;
+        const translateY = (1 - reveal) * 14;
+        const scale = 0.93 + reveal * 0.07;
+
+        const visible = opacity > 0.04;
+        card.style.opacity = String(opacity);
+        card.style.visibility = visible ? "visible" : "hidden";
+
+        if (visible) {
+            card.style.transform = `translate3d(${translateX}px, ${translateY}px, 0) scale(${scale})`;
+        } else if (cardLeft >= viewRight + enterLead * 0.2) {
+            card.style.transform = "translate3d(30px, 14px, 0) scale(0.93)";
+        } else if (cardRight <= viewLeft - exitTail * 0.2) {
+            card.style.transform = "translate3d(-22px, 14px, 0) scale(0.93)";
+        } else {
+            card.style.transform = "translate3d(30px, 14px, 0) scale(0.93)";
+        }
+    });
+}
+
 function setScenePanX(next) {
     const max = getScenePanMax();
     scenePanX = Math.max(-max, Math.min(0, next));
     document.documentElement.style.setProperty("--scene-pan-x", `${scenePanX}px`);
     updateGalleryTitleVisibility();
+    updateGalleryCardReveal();
     scheduleCullOffScreenPlants();
 }
 
