@@ -836,7 +836,7 @@ body.scene-pannable .love-letter-stage{
 .pan-section-title{
     position:absolute;
     top:28px;
-    left:calc(var(--app-w) / 2 - var(--scene-pan-x, 0px));
+    left:var(--title-pin-x, calc(var(--app-w) / 2));
     z-index:20;
     transform:translateX(-50%);
     width:max-content;
@@ -859,14 +859,7 @@ body.scene-pannable .love-letter-stage{
     user-select:none;
     opacity:0;
     visibility:hidden;
-    transition:opacity 0.35s ease, visibility 0.35s ease;
-}
-
-#memoryGallery.is-active .pan-section-title,
-#favoritesStage.is-active .pan-section-title,
-#finaleStage.is-active .pan-section-title{
-    opacity:1;
-    visibility:visible;
+    will-change:opacity;
 }
 
 .pan-section-title--finale{
@@ -3483,6 +3476,9 @@ function updateSceneZoom() {
     const zoom = clamp(height / appViewport.height, 0.25, 4);
     document.documentElement.style.setProperty("--scene-zoom", String(zoom));
 
+    if (typeof updateTitlePinPosition === "function") {
+        updateTitlePinPosition();
+    }
     if (typeof setScenePanX === "function" && typeof scenePanX === "number") {
         setScenePanX(scenePanX);
     }
@@ -3543,6 +3539,8 @@ function initScene() {
             applyWorldDimensions();
             syncFinaleGardenSvgs();
             enableTempGalleryPan();
+            updateTitlePinPosition();
+            updatePanSectionTitles();
 
             if (document.body.classList.contains("letter-focus")) {
                 void mountLoveLetter().then(() => growLoveLetterIntro());
@@ -5355,71 +5353,63 @@ function getScenePanX() {
     return scenePanX;
 }
 
-function isPanSectionTitleActive(viewLeft, viewRight, sectionStart, sectionEnd) {
-    const overlap =
-        Math.min(viewRight, sectionEnd) - Math.max(viewLeft, sectionStart);
-    if (overlap <= 0) return false;
+function panTitleSmoothstep(edge0, edge1, value) {
+    const t = clamp((value - edge0) / (edge1 - edge0), 0, 1);
+    return t * t * (3 - 2 * t);
+}
 
-    const viewWidth = viewRight - viewLeft;
-    const sectionWidth = sectionEnd - sectionStart;
+function panTitleFadeIn(viewCenter, boundary, fadeBand) {
+    return panTitleSmoothstep(boundary - fadeBand, boundary + fadeBand, viewCenter);
+}
 
-    if (sectionWidth > viewWidth * 1.2) {
-        const viewCenter = (viewLeft + viewRight) / 2;
-        return viewCenter >= sectionStart && viewCenter < sectionEnd;
-    }
+function panTitleFadeOut(viewCenter, boundary, fadeBand) {
+    return 1 - panTitleSmoothstep(boundary - fadeBand, boundary + fadeBand, viewCenter);
+}
 
-    return overlap >= Math.min(sectionWidth, viewWidth) * 0.2;
+function setPanSectionTitleOpacity(hostId, opacity) {
+    const title = document.getElementById(hostId)?.querySelector(".pan-section-title");
+    if (!title) return;
+
+    const clamped = clamp(opacity, 0, 1);
+    title.style.opacity = String(clamped);
+    title.style.visibility = clamped > 0.02 ? "visible" : "hidden";
+}
+
+function updateTitlePinPosition() {
+    const { viewCenter } = getSceneViewBounds();
+    document.documentElement.style.setProperty("--title-pin-x", `${viewCenter}px`);
 }
 
 function updatePanSectionTitles() {
     const appW = getAppViewport().width;
-    const { viewLeft, viewRight, viewCenter } = getSceneViewBounds();
+    const { viewCenter, viewWidth } = getSceneViewBounds();
 
     const galleryStart = appW;
     const galleryEnd = galleryStart + getGalleryWidth();
     const favoritesStart = galleryEnd + getFavoritesGap();
     const favoritesEnd = favoritesStart + getFavoritesWidth();
     const finaleStart = favoritesEnd + getFinaleGap();
-    const finaleEnd = finaleStart + getFinaleWidth();
 
-    const galleryHost = document.getElementById("memoryGallery");
-    const favoritesHost = document.getElementById("favoritesStage");
-    const finaleHost = document.getElementById("finaleStage");
+    const fadeBand = clamp(viewWidth * 0.42, 320, 560);
+    const boundaryIntroGallery = galleryStart;
+    const boundaryGalleryFavorites = (galleryEnd + favoritesStart) / 2;
+    const boundaryFavoritesFinale = (favoritesEnd + finaleStart) / 2;
 
-    const favoritesVisible = isPanSectionTitleActive(
-        viewLeft,
-        viewRight,
-        favoritesStart,
-        favoritesEnd
+    const galleryOpacity =
+        panTitleFadeIn(viewCenter, boundaryIntroGallery, fadeBand) *
+        panTitleFadeOut(viewCenter, boundaryGalleryFavorites, fadeBand);
+    const favoritesOpacity =
+        panTitleFadeIn(viewCenter, boundaryGalleryFavorites, fadeBand) *
+        panTitleFadeOut(viewCenter, boundaryFavoritesFinale, fadeBand);
+    const finaleOpacity = panTitleFadeIn(
+        viewCenter,
+        boundaryFavoritesFinale,
+        fadeBand
     );
-    const finaleVisible = isPanSectionTitleActive(
-        viewLeft,
-        viewRight,
-        finaleStart,
-        finaleEnd
-    );
 
-    let favoritesActive = false;
-    let finaleActive = false;
-
-    if (favoritesVisible && finaleVisible) {
-        const handoff = (favoritesEnd + finaleStart) / 2;
-        if (viewCenter < handoff) {
-            favoritesActive = true;
-        } else {
-            finaleActive = true;
-        }
-    } else {
-        favoritesActive = favoritesVisible;
-        finaleActive = finaleVisible;
-    }
-
-    galleryHost?.classList.toggle(
-        "is-active",
-        isPanSectionTitleActive(viewLeft, viewRight, galleryStart, galleryEnd)
-    );
-    favoritesHost?.classList.toggle("is-active", favoritesActive);
-    finaleHost?.classList.toggle("is-active", finaleActive);
+    setPanSectionTitleOpacity("memoryGallery", galleryOpacity);
+    setPanSectionTitleOpacity("favoritesStage", favoritesOpacity);
+    setPanSectionTitleOpacity("finaleStage", finaleOpacity);
 }
 
 function galleryRevealFade(t) {
@@ -5482,6 +5472,7 @@ function setScenePanX(next) {
     const max = getScenePanMax();
     scenePanX = Math.max(-max, Math.min(0, next));
     document.documentElement.style.setProperty("--scene-pan-x", `${scenePanX}px`);
+    updateTitlePinPosition();
     updatePanSectionTitles();
     updateGalleryCardReveal();
     scheduleCullOffScreenPlants();
