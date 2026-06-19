@@ -247,6 +247,44 @@ body.scene-pannable .love-letter-stage{
         0 0 80px rgba(255, 80, 195, 0.42);
 }
 
+.pan-hint-arrow{
+    position:fixed;
+    right:clamp(14px, 2.8vw, 28px);
+    top:50%;
+    z-index:12;
+    transform:translateY(-50%);
+    pointer-events:none;
+    opacity:0;
+    visibility:hidden;
+    transition:opacity 0.55s ease, visibility 0.55s ease;
+}
+
+.pan-hint-arrow.is-visible{
+    opacity:1;
+    visibility:visible;
+}
+
+.pan-hint-arrow-icon{
+    display:block;
+    width:clamp(68px, 13vw, 112px);
+    height:auto;
+    filter:
+        drop-shadow(0 0 14px rgba(255, 160, 230, 0.55))
+        drop-shadow(0 0 28px rgba(255, 120, 210, 0.32));
+    animation:pan-hint-arrow-pulse 1.35s ease-in-out infinite;
+}
+
+@keyframes pan-hint-arrow-pulse{
+    0%, 100%{
+        transform:translateX(0);
+        opacity:0.82;
+    }
+    50%{
+        transform:translateX(-16px);
+        opacity:1;
+    }
+}
+
 .letter-word{
     display:inline-block;
     white-space:nowrap;
@@ -674,7 +712,7 @@ body.scene-pannable .love-letter-stage{
     width:var(--world-w, 100vw);
     height:var(--app-h, 100vh);
     pointer-events:none;
-    overflow:visible;
+    overflow:hidden;
 }
 
 .finale-stage-panel{
@@ -713,7 +751,7 @@ body.scene-pannable .love-letter-stage{
     left:50%;
     z-index:1;
     transform:translateX(calc(-50% + 150px)) translateY(10px);
-    width:min(calc(var(--app-w, 100vw) * 2.3), 1600px);
+    width:min(230%, 1600px);
     height:auto;
     display:block;
     pointer-events:none;
@@ -729,22 +767,22 @@ body.scene-pannable .love-letter-stage{
     transform:translateX(calc(-50% + 48px));
     display:flex;
     align-items:flex-end;
-    justify-content:flex-start;
-    width:min(calc(var(--app-w, 100vw) * 3.6), 2820px);
+    justify-content:center;
+    width:min(240%, 1880px);
     pointer-events:none;
 }
 
 .finale-gate{
-    flex:0 0 33.333%;
-    width:33.333%;
+    flex:0 0 auto;
+    width:50%;
     height:auto;
     display:block;
     pointer-events:none;
     object-fit:contain;
-    object-position:left bottom;
+    object-position:center bottom;
 }
 
-.finale-gate:not(:last-child){
+.finale-gate:first-child{
     transform:translateX(72px);
 }
 
@@ -765,14 +803,7 @@ body.scene-pannable .love-letter-stage{
 }
 
 .favorites-arc-ring circle{
-    fill:none;
-    stroke:rgba(255, 198, 236, 0.68);
-    stroke-width:1.75;
-    stroke-linecap:round;
-    stroke-dasharray:14 22;
-    filter:
-        drop-shadow(0 0 10px rgba(255, 155, 220, 0.42))
-        drop-shadow(0 0 24px rgba(255, 120, 210, 0.22));
+    display:none;
 }
 
 .favorites-arc-photos{
@@ -1389,10 +1420,10 @@ body.scene-pannable .love-letter-stage{
 <div id="memoryGallery" class="memory-gallery" aria-hidden="true"></div>
 
 <div id="favoritesStage" class="favorites-stage" aria-hidden="true">
-    <h2 class="pan-section-title">10 FAVORITE MOMENTS WITH YOU</h2>
+    <h2 class="pan-section-title">OUR BELOVED PHOTOBOOTH SESSION</h2>
     <div class="favorites-stage-panel" aria-hidden="true">
         <svg class="favorites-arc-ring" viewBox="0 0 1000 640" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
-            <g class="favorites-arc-root" transform="translate(500 1340)">
+            <g class="favorites-arc-root" transform="translate(500 1400)">
                 <g class="favorites-arc-ring-spin">
                     <circle cx="0" cy="0" r="800" />
                     <g class="favorites-arc-photos"></g>
@@ -1414,12 +1445,15 @@ body.scene-pannable .love-letter-stage{
         <div class="finale-gates" aria-hidden="true">
             <img class="finale-gate" src="images/UI/gate.svg" alt="" aria-hidden="true" />
             <img class="finale-gate" src="images/UI/gate.svg" alt="" aria-hidden="true" />
-            <img class="finale-gate" src="images/UI/gate.svg" alt="" aria-hidden="true" />
         </div>
     </div>
 </div>
 
 <div class="music-bar" id="musicBar" aria-label="Music player"></div>
+
+<div id="panHintArrow" class="pan-hint-arrow" aria-hidden="true">
+    <img class="pan-hint-arrow-icon" src="images/UI/Arrow.svg" alt="" />
+</div>
 
 <script src="gallery-locked-layout.js"></script>
 <script>
@@ -1494,11 +1528,14 @@ const GALLERY_CAPTIONS_EDITABLE = false;
 const FAVORITES_SECTION_SCREENS = 1;
 const FAVORITES_SECTION_GAP_SCREENS = 0.25;
 const FINALE_SECTION_SCREENS = 1;
-const FINALE_SECTION_OVERFLOW_SCREENS = 1.45;
 const FINALE_SECTION_GAP_SCREENS = 0.25;
+const FINALE_GATES_SHIFT_X = 48;
+const FINALE_GATES_WIDTH_RATIO = 2.4;
+const FINALE_GATES_MAX_PX = 1880;
+const FINALE_PAN_STOP_BEFORE_SECOND_GATE = 50;
 const FAVORITES_ARC_PHOTO_COUNT = 8;
 const FAVORITES_ARC_CENTER_X = 500;
-const FAVORITES_ARC_CENTER_Y = 1340;
+const FAVORITES_ARC_CENTER_Y = 1400;
 const FAVORITES_ARC_RADIUS = 800;
 const FAVORITES_ARC_PHOTO_H = 780;
 const FAVORITES_ARC_PHOTO_W = 236;
@@ -1529,7 +1566,7 @@ const GALLERY_MANUAL_GLASS_GAPS = [
     [35, 38],
     [53, 47],
 ];
-const TEMP_GALLERY_PAN = true;
+const TEMP_GALLERY_PAN = false;
 const GALLERY_LAYOUT_REF_HEIGHT = 945;
 const GALLERY_USE_LOCKED_LAYOUT =
     !new URLSearchParams(window.location.search).has("bakeLayout") &&
@@ -3086,8 +3123,19 @@ function getFinaleGap() {
 }
 
 function getFinaleWidth() {
-    const appW = getAppViewport().width;
-    return appW * (FINALE_SECTION_SCREENS + FINALE_SECTION_OVERFLOW_SCREENS);
+    return getAppViewport().width * FINALE_SECTION_SCREENS;
+}
+
+function getFinaleGatesWidth() {
+    const panelW = getFinaleWidth();
+    return Math.min(panelW * FINALE_GATES_WIDTH_RATIO, FINALE_GATES_MAX_PX);
+}
+
+function getFinaleSecondGateLayoutRight() {
+    const panelW = getFinaleWidth();
+    const gatesW = getFinaleGatesWidth();
+    const gatesLeftInPanel = (panelW - gatesW) / 2 + FINALE_GATES_SHIFT_X;
+    return getFinalePanelLeft() + gatesLeftInPanel + gatesW;
 }
 
 function getPanScrollWidth() {
@@ -3101,7 +3149,12 @@ function getPanScrollWidth() {
 }
 
 function getScenePanMax() {
-    return getPanScrollWidth();
+    const fullScroll = getPanScrollWidth();
+    const stopAt =
+        getFinaleSecondGateLayoutRight() -
+        FINALE_PAN_STOP_BEFORE_SECOND_GATE -
+        getAppViewport().width;
+    return Math.min(fullScroll, Math.max(0, stopAt));
 }
 
 function getWorldWidth() {
@@ -3455,7 +3508,6 @@ function initScene() {
             mountFavoritesArcPhotos();
             applyWorldDimensions();
             syncFinaleGardenSvgs();
-            enableTempGalleryPan();
 
             if (document.body.classList.contains("letter-focus")) {
                 void mountLoveLetter().then(() => growLoveLetterIntro());
@@ -5364,6 +5416,30 @@ function setScenePanX(next) {
     updatePanSectionTitles();
     updateGalleryCardReveal();
     scheduleCullOffScreenPlants();
+    updatePanHintArrowForPan();
+}
+
+function showPanHintArrow() {
+    const arrow = document.getElementById("panHintArrow");
+    if (!arrow || arrow.dataset.dismissed === "1") return;
+
+    arrow.setAttribute("aria-hidden", "false");
+    requestAnimationFrame(() => {
+        arrow.classList.add("is-visible");
+    });
+}
+
+function hidePanHintArrow() {
+    const arrow = document.getElementById("panHintArrow");
+    if (!arrow || arrow.dataset.dismissed === "1") return;
+
+    arrow.dataset.dismissed = "1";
+    arrow.classList.remove("is-visible");
+    arrow.setAttribute("aria-hidden", "true");
+}
+
+function updatePanHintArrowForPan() {
+    if (scenePanX < -28) hidePanHintArrow();
 }
 
 function isScenePanTarget(target) {
@@ -5513,6 +5589,7 @@ function revealLetterYesButton(letterArt) {
         if (button.dataset.picked === "1") return;
         button.dataset.picked = "1";
         button.disabled = true;
+        showPanHintArrow();
         revealTapAroundHint(host, copy);
     });
     copy.appendChild(button);
