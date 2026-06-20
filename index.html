@@ -731,22 +731,16 @@ body.scene-pannable .love-letter-stage{
 }
 
 .playlist-embeds{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
+    display:grid;
+    grid-template-columns:repeat(5, 300px);
+    grid-template-rows:repeat(4, 152px);
+    gap:24px 28px;
     justify-content:center;
-    gap:clamp(14px, 2vh, 20px);
+    align-content:start;
     width:100%;
-    height:100%;
-    padding:clamp(92px, 13vh, 112px) clamp(20px, 4vw, 40px) 28px;
+    height:945px;
+    padding:142px 40px 0;
     box-sizing:border-box;
-}
-
-.playlist-embeds-row{
-    display:flex;
-    gap:clamp(16px, 2.5vw, 24px);
-    justify-content:center;
-    width:auto;
 }
 
 .playlist-embed{
@@ -1494,278 +1488,226 @@ body.scene-pannable .love-letter-stage{
     <h2 class="pan-section-title">SONGS THAT REMINDS ME OF YOU</h2>
     <div class="playlist-stage-panel" aria-hidden="true">
         <div class="playlist-embeds">
-            <div class="playlist-embeds-row">
-                <iframe
-                    class="playlist-embed"
-                    title="Putri Iklan by ST12"
-                    src="https://open.spotify.com/embed/track/2KvzB5VX0f7LVWYn88H6Ti?utm_source=generator"
-                    width="300"
-                    height="152"
-                    frameborder="0"
-                    allowfullscreen
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    loading="lazy"
-                ></iframe>
-                <iframe
-                    class="playlist-embed"
-                    title="RAGAMAN"
-                    src="https://open.spotify.com/embed/track/7fVEN8fGt7LJxabnvFSx0K?utm_source=generator"
-                    width="300"
-                    height="152"
-                    frameborder="0"
-                    allowfullscreen
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    loading="lazy"
-                ></iframe>
-                <iframe
-                    class="playlist-embed"
-                    title="Malam Bulan Di Pagar Bintang"
-                    src="https://open.spotify.com/embed/track/5Cbgzs0ouvm5DigfAWjGOk?utm_source=generator"
-                    width="300"
-                    height="152"
-                    frameborder="0"
-                    allowfullscreen
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    loading="lazy"
-                ></iframe>
-                <iframe
-                    class="playlist-embed"
-                    title="penjaga hati"
-                    src="https://open.spotify.com/embed/track/7F4tV8SiUy6itZTdAzdafO?utm_source=generator"
-                    width="300"
-                    height="152"
-                    frameborder="0"
-                    allowfullscreen
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    loading="lazy"
-                ></iframe>
-                <iframe
-                    class="playlist-embed"
-                    title="Sedetik Lebih"
-                    src="https://open.spotify.com/embed/track/0wU81ztD9Phud7dVlJXvcx?utm_source=generator"
-                    width="300"
-                    height="152"
-                    frameborder="0"
-                    allowfullscreen
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    loading="lazy"
-                ></iframe>
-                <iframe
-                    class="playlist-embed"
-                    title="Every Time I Close My Eyes"
-                    src="https://open.spotify.com/embed/track/2ur86gejngdRnhbfAMgbT2?utm_source=generator"
-                    width="300"
-                    height="152"
-                    frameborder="0"
-                    allowfullscreen
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    loading="lazy"
-                ></iframe>
-            </div>
-            <div class="playlist-embeds-row">
-                <iframe
-                    class="playlist-embed"
-                    title="Bunga by MASDO"
-                    src="https://open.spotify.com/embed/track/4LzCVeWfVy2nkdwBcHDwxt?utm_source=generator"
-                    width="300"
-                    height="152"
-                    frameborder="0"
-                    allowfullscreen
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    loading="lazy"
-                ></iframe>
-                <iframe
-                    class="playlist-embed"
-                    title="dekati."
-                    src="https://open.spotify.com/embed/track/67r1Hc0bFPMYEvhPya4B2z?utm_source=generator"
-                    width="300"
-                    height="152"
-                    frameborder="0"
-                    allowfullscreen
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    loading="lazy"
-                ></iframe>
-                <iframe
-                    class="playlist-embed"
-                    title="Nak Dara Rindu"
-                    src="https://open.spotify.com/embed/track/6WDznaFLCO4BxdQcYK6m7z?utm_source=generator"
-                    width="300"
-                    height="152"
-                    frameborder="0"
-                    allowfullscreen
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    loading="lazy"
-                ></iframe>
-                <iframe
-                    class="playlist-embed"
-                    title="Datanglah sang puteri"
-                    src="https://open.spotify.com/embed/track/3uyYI5pOD9R1PctrzGeGAX?utm_source=generator"
-                    width="300"
-                    height="152"
-                    frameborder="0"
-                    allowfullscreen
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    loading="lazy"
-                ></iframe>
-                <iframe
-                    class="playlist-embed"
-                    title="Glue Song"
-                    src="https://open.spotify.com/embed/track/3iBgrkexCzVuPy4O9vx7Mf?utm_source=generator"
-                    width="300"
-                    height="152"
-                    frameborder="0"
-                    allowfullscreen
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    loading="lazy"
-                ></iframe>
-                <iframe
-                    class="playlist-embed"
-                    title="love."
-                    src="https://open.spotify.com/embed/track/5mtTAScDytxMMqZj14NmlN?utm_source=generator"
-                    width="300"
-                    height="152"
-                    frameborder="0"
-                    allowfullscreen
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    loading="lazy"
-                ></iframe>
-            </div>
-            <div class="playlist-embeds-row">
-                <iframe
-                    class="playlist-embed"
-                    title="Dinda by MASDO"
-                    src="https://open.spotify.com/embed/track/0YxZwR2nJViImRcbNpDQDj?utm_source=generator"
-                    width="300"
-                    height="152"
-                    frameborder="0"
-                    allowfullscreen
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    loading="lazy"
-                ></iframe>
-                <iframe
-                    class="playlist-embed"
-                    title="Getaran Jiwa"
-                    src="https://open.spotify.com/embed/track/5omhVrDWK6JnR8TvVyicSS?utm_source=generator"
-                    width="300"
-                    height="152"
-                    frameborder="0"
-                    allowfullscreen
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    loading="lazy"
-                ></iframe>
-                <iframe
-                    class="playlist-embed"
-                    title="Distant Lover"
-                    src="https://open.spotify.com/embed/track/7vpkmzisaB8R47XlxyTcfs?utm_source=generator"
-                    width="300"
-                    height="152"
-                    frameborder="0"
-                    allowfullscreen
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    loading="lazy"
-                ></iframe>
-                <iframe
-                    class="playlist-embed"
-                    title="Dugaannya"
-                    src="https://open.spotify.com/embed/track/6FAYx3IsAQLD4pfwd5cRVv?utm_source=generator"
-                    width="300"
-                    height="152"
-                    frameborder="0"
-                    allowfullscreen
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    loading="lazy"
-                ></iframe>
-                <iframe
-                    class="playlist-embed"
-                    title="Dealova"
-                    src="https://open.spotify.com/embed/track/4Eybcl06frChLYoXm0sxJi?utm_source=generator"
-                    width="300"
-                    height="152"
-                    frameborder="0"
-                    allowfullscreen
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    loading="lazy"
-                ></iframe>
-                <iframe
-                    class="playlist-embed"
-                    title="Risk It All"
-                    src="https://open.spotify.com/embed/track/5y2ijHECwFYWqcAHKTZgzD?utm_source=generator"
-                    width="300"
-                    height="152"
-                    frameborder="0"
-                    allowfullscreen
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    loading="lazy"
-                ></iframe>
-            </div>
-            <div class="playlist-embeds-row">
-                <iframe
-                    class="playlist-embed"
-                    title="Sempurna"
-                    src="https://open.spotify.com/embed/track/67C6LHREqmytK923Ak6R0I?utm_source=generator"
-                    width="300"
-                    height="152"
-                    frameborder="0"
-                    allowfullscreen
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    loading="lazy"
-                ></iframe>
-                <iframe
-                    class="playlist-embed"
-                    title="Heaven Can Wait"
-                    src="https://open.spotify.com/embed/track/1AZXNAVDD9ZFIEKySgflFz?utm_source=generator"
-                    width="300"
-                    height="152"
-                    frameborder="0"
-                    allowfullscreen
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    loading="lazy"
-                ></iframe>
-                <iframe
-                    class="playlist-embed"
-                    title="You Rock My World"
-                    src="https://open.spotify.com/embed/track/1Lhwn4PqeGpM4LTVUowW76?utm_source=generator"
-                    width="300"
-                    height="152"
-                    frameborder="0"
-                    allowfullscreen
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    loading="lazy"
-                ></iframe>
-                <iframe
-                    class="playlist-embed"
-                    title="kota ini tak sama tanpamu (with Aziz Harun &amp; Aisha Retno)"
-                    src="https://open.spotify.com/embed/track/75DnXTAoFiorMrqkPVbjSH?utm_source=generator"
-                    width="300"
-                    height="152"
-                    frameborder="0"
-                    allowfullscreen
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    loading="lazy"
-                ></iframe>
-                <iframe
-                    class="playlist-embed"
-                    title="call you mine"
-                    src="https://open.spotify.com/embed/track/1RXMpxqF0t1h3Pe2v4BUHA?utm_source=generator"
-                    width="300"
-                    height="152"
-                    frameborder="0"
-                    allowfullscreen
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    loading="lazy"
-                ></iframe>
-                <iframe
-                    class="playlist-embed"
-                    title="Sleep Well"
-                    src="https://open.spotify.com/embed/track/61MhXxcy6MUhrDeHCDE7AP?utm_source=generator"
-                    width="300"
-                    height="152"
-                    frameborder="0"
-                    allowfullscreen
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    loading="lazy"
-                ></iframe>
-            </div>
+            <iframe
+                class="playlist-embed"
+                title="Putri Iklan by ST12"
+                src="https://open.spotify.com/embed/track/2KvzB5VX0f7LVWYn88H6Ti?utm_source=generator"
+                width="300"
+                height="152"
+                frameborder="0"
+                allowfullscreen
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                loading="lazy"
+            ></iframe>
+            <iframe
+                class="playlist-embed"
+                title="RAGAMAN"
+                src="https://open.spotify.com/embed/track/7fVEN8fGt7LJxabnvFSx0K?utm_source=generator"
+                width="300"
+                height="152"
+                frameborder="0"
+                allowfullscreen
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                loading="lazy"
+            ></iframe>
+            <iframe
+                class="playlist-embed"
+                title="penjaga hati"
+                src="https://open.spotify.com/embed/track/7F4tV8SiUy6itZTdAzdafO?utm_source=generator"
+                width="300"
+                height="152"
+                frameborder="0"
+                allowfullscreen
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                loading="lazy"
+            ></iframe>
+            <iframe
+                class="playlist-embed"
+                title="Sedetik Lebih"
+                src="https://open.spotify.com/embed/track/0wU81ztD9Phud7dVlJXvcx?utm_source=generator"
+                width="300"
+                height="152"
+                frameborder="0"
+                allowfullscreen
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                loading="lazy"
+            ></iframe>
+            <iframe
+                class="playlist-embed"
+                title="Every Time I Close My Eyes"
+                src="https://open.spotify.com/embed/track/2ur86gejngdRnhbfAMgbT2?utm_source=generator"
+                width="300"
+                height="152"
+                frameborder="0"
+                allowfullscreen
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                loading="lazy"
+            ></iframe>
+            <iframe
+                class="playlist-embed"
+                title="Bunga by MASDO"
+                src="https://open.spotify.com/embed/track/4LzCVeWfVy2nkdwBcHDwxt?utm_source=generator"
+                width="300"
+                height="152"
+                frameborder="0"
+                allowfullscreen
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                loading="lazy"
+            ></iframe>
+            <iframe
+                class="playlist-embed"
+                title="Nak Dara Rindu"
+                src="https://open.spotify.com/embed/track/6WDznaFLCO4BxdQcYK6m7z?utm_source=generator"
+                width="300"
+                height="152"
+                frameborder="0"
+                allowfullscreen
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                loading="lazy"
+            ></iframe>
+            <iframe
+                class="playlist-embed"
+                title="Datanglah sang puteri"
+                src="https://open.spotify.com/embed/track/3uyYI5pOD9R1PctrzGeGAX?utm_source=generator"
+                width="300"
+                height="152"
+                frameborder="0"
+                allowfullscreen
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                loading="lazy"
+            ></iframe>
+            <iframe
+                class="playlist-embed"
+                title="Glue Song"
+                src="https://open.spotify.com/embed/track/3iBgrkexCzVuPy4O9vx7Mf?utm_source=generator"
+                width="300"
+                height="152"
+                frameborder="0"
+                allowfullscreen
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                loading="lazy"
+            ></iframe>
+            <iframe
+                class="playlist-embed"
+                title="love."
+                src="https://open.spotify.com/embed/track/5mtTAScDytxMMqZj14NmlN?utm_source=generator"
+                width="300"
+                height="152"
+                frameborder="0"
+                allowfullscreen
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                loading="lazy"
+            ></iframe>
+            <iframe
+                class="playlist-embed"
+                title="Dinda by MASDO"
+                src="https://open.spotify.com/embed/track/0YxZwR2nJViImRcbNpDQDj?utm_source=generator"
+                width="300"
+                height="152"
+                frameborder="0"
+                allowfullscreen
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                loading="lazy"
+            ></iframe>
+            <iframe
+                class="playlist-embed"
+                title="Getaran Jiwa"
+                src="https://open.spotify.com/embed/track/5omhVrDWK6JnR8TvVyicSS?utm_source=generator"
+                width="300"
+                height="152"
+                frameborder="0"
+                allowfullscreen
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                loading="lazy"
+            ></iframe>
+            <iframe
+                class="playlist-embed"
+                title="Dealova"
+                src="https://open.spotify.com/embed/track/4Eybcl06frChLYoXm0sxJi?utm_source=generator"
+                width="300"
+                height="152"
+                frameborder="0"
+                allowfullscreen
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                loading="lazy"
+            ></iframe>
+            <iframe
+                class="playlist-embed"
+                title="Risk It All"
+                src="https://open.spotify.com/embed/track/5y2ijHECwFYWqcAHKTZgzD?utm_source=generator"
+                width="300"
+                height="152"
+                frameborder="0"
+                allowfullscreen
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                loading="lazy"
+            ></iframe>
+            <iframe
+                class="playlist-embed"
+                title="call you mine"
+                src="https://open.spotify.com/embed/track/1RXMpxqF0t1h3Pe2v4BUHA?utm_source=generator"
+                width="300"
+                height="152"
+                frameborder="0"
+                allowfullscreen
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                loading="lazy"
+            ></iframe>
+            <iframe
+                class="playlist-embed"
+                title="Sempurna"
+                src="https://open.spotify.com/embed/track/67C6LHREqmytK923Ak6R0I?utm_source=generator"
+                width="300"
+                height="152"
+                frameborder="0"
+                allowfullscreen
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                loading="lazy"
+            ></iframe>
+            <iframe
+                class="playlist-embed"
+                title="Heaven Can Wait"
+                src="https://open.spotify.com/embed/track/1AZXNAVDD9ZFIEKySgflFz?utm_source=generator"
+                width="300"
+                height="152"
+                frameborder="0"
+                allowfullscreen
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                loading="lazy"
+            ></iframe>
+            <iframe
+                class="playlist-embed"
+                title="You Rock My World"
+                src="https://open.spotify.com/embed/track/1Lhwn4PqeGpM4LTVUowW76?utm_source=generator"
+                width="300"
+                height="152"
+                frameborder="0"
+                allowfullscreen
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                loading="lazy"
+            ></iframe>
+            <iframe
+                class="playlist-embed"
+                title="kota ini tak sama tanpamu (with Aziz Harun &amp; Aisha Retno)"
+                src="https://open.spotify.com/embed/track/75DnXTAoFiorMrqkPVbjSH?utm_source=generator"
+                width="300"
+                height="152"
+                frameborder="0"
+                allowfullscreen
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                loading="lazy"
+            ></iframe>
+            <iframe
+                class="playlist-embed"
+                title="Sleep Well"
+                src="https://open.spotify.com/embed/track/61MhXxcy6MUhrDeHCDE7AP?utm_source=generator"
+                width="300"
+                height="152"
+                frameborder="0"
+                allowfullscreen
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                loading="lazy"
+            ></iframe>
         </div>
     </div>
 </div>
