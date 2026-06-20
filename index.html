@@ -803,7 +803,7 @@ body.scene-pannable .love-letter-stage{
     bottom:0;
     left:50%;
     z-index:1;
-    transform:translateX(calc(-50% + 150px)) translateY(10px);
+    transform:translateX(calc(-50% + 200px)) translateY(10px);
     width:min(230%, 1600px);
     height:auto;
     display:block;
@@ -812,12 +812,27 @@ body.scene-pannable .love-letter-stage{
     object-position:center bottom;
 }
 
+.finale-bubududu{
+    position:absolute;
+    bottom:0;
+    left:50%;
+    z-index:2;
+    transform:translateX(calc(-50% - 720px)) translateY(6px);
+    width:220px;
+    height:auto;
+    display:block;
+    pointer-events:none;
+    object-fit:contain;
+    object-position:left bottom;
+    opacity:1;
+}
+
 .finale-gates{
     position:absolute;
     bottom:0;
     left:50%;
     z-index:3;
-    transform:translateX(calc(-50% + 48px));
+    transform:translateX(calc(-50% - 20px));
     display:flex;
     align-items:flex-end;
     justify-content:center;
@@ -1451,6 +1466,55 @@ body.scene-pannable .love-letter-stage{
 .music-bar [data-music-track]{
     cursor:pointer;
 }
+
+.pan-scroll-track{
+    position:fixed;
+    bottom:6px;
+    left:20px;
+    right:20px;
+    width:auto;
+    height:22px;
+    z-index:13;
+    pointer-events:none;
+    opacity:0;
+    visibility:hidden;
+    transition:opacity 0.28s ease, visibility 0.28s ease;
+}
+
+.pan-scroll-track.is-visible{
+    opacity:1;
+    visibility:visible;
+    pointer-events:auto;
+}
+
+.pan-scroll-thumb{
+    position:absolute;
+    top:50%;
+    left:0;
+    width:42px;
+    height:8px;
+    border:0;
+    border-radius:999px;
+    background:#FFCFFA;
+    box-shadow:0 0 10px rgba(255,120,210,0.5);
+    transform:translate(-50%, -50%);
+    cursor:grab;
+    touch-action:none;
+}
+
+.pan-scroll-thumb::before{
+    content:"";
+    position:absolute;
+    left:50%;
+    top:50%;
+    width:64px;
+    height:28px;
+    transform:translate(-50%, -50%);
+}
+
+.pan-scroll-track.is-dragging .pan-scroll-thumb{
+    cursor:grabbing;
+}
 </style>
 </head>
 
@@ -1721,11 +1785,16 @@ body.scene-pannable .love-letter-stage{
         <svg id="finaleGardenBack" class="finale-garden finale-garden-back" aria-hidden="true"></svg>
         <img class="finale-house" src="images/UI/house.svg" alt="" aria-hidden="true" />
         <svg id="finaleGardenFront" class="finale-garden finale-garden-front" aria-hidden="true"></svg>
+        <img class="finale-bubududu" src="images/UI/bubududu.png" alt="" aria-hidden="true" />
         <div class="finale-gates" aria-hidden="true">
             <img class="finale-gate" src="images/UI/gate.svg" alt="" aria-hidden="true" />
             <img class="finale-gate" src="images/UI/gate.svg" alt="" aria-hidden="true" />
         </div>
     </div>
+</div>
+
+<div id="panScrollTrack" class="pan-scroll-track" aria-hidden="true">
+    <div id="panScrollThumb" class="pan-scroll-thumb" role="slider" aria-label="Scene scroll"></div>
 </div>
 
 <div class="music-bar" id="musicBar" aria-label="Music player"></div>
@@ -1810,7 +1879,7 @@ const PLAYLIST_SECTION_SCREENS = 1;
 const PLAYLIST_SECTION_GAP_SCREENS = 0.25;
 const FINALE_SECTION_SCREENS = 1;
 const FINALE_SECTION_GAP_SCREENS = 0.25;
-const FINALE_GATES_SHIFT_X = 48;
+const FINALE_GATES_SHIFT_X = -20;
 const FINALE_GATES_WIDTH_RATIO = 2.4;
 const FINALE_GATES_MAX_PX = 1880;
 const FINALE_PAN_STOP_BEFORE_SECOND_GATE = 50;
@@ -5799,6 +5868,109 @@ function setScenePanX(next) {
     updateGalleryCardReveal();
     scheduleCullOffScreenPlants();
     updatePanHintArrowForPan();
+    updatePanScrollThumb();
+}
+
+function updatePanScrollThumb() {
+    const track = document.getElementById("panScrollTrack");
+    const thumb = document.getElementById("panScrollThumb");
+    if (!track || !thumb) return;
+
+    const max = getScenePanMax();
+    const show = canPanScrollThumb() && max > 1;
+
+    track.classList.toggle("is-visible", show);
+    track.setAttribute("aria-hidden", show ? "false" : "true");
+
+    if (!show) return;
+
+    const trackW = track.clientWidth;
+    const thumbW = thumb.offsetWidth;
+    const travel = Math.max(0, trackW - thumbW);
+    const ratio = max > 0 ? Math.abs(scenePanX) / max : 0;
+    thumb.style.left = `${thumbW / 2 + ratio * travel}px`;
+}
+
+function canPanScrollThumb() {
+    return (
+        document.body.dataset.panScrollUnlock === "1" &&
+        canScenePan()
+    );
+}
+
+function enablePanScrollThumb() {
+    if (document.body.dataset.panScrollUnlock === "1") return;
+
+    document.body.dataset.panScrollUnlock = "1";
+    updatePanScrollThumb();
+}
+
+function setupPanScrollThumb() {
+    const track = document.getElementById("panScrollTrack");
+    const thumb = document.getElementById("panScrollThumb");
+    if (!track || !thumb || track.dataset.ready === "1") return;
+    track.dataset.ready = "1";
+
+    let dragging = false;
+    let startX = 0;
+    let startPanX = 0;
+    let activePointerId = null;
+
+    thumb.addEventListener(
+        "pointerdown",
+        (e) => {
+            if (!canPanScrollThumb()) return;
+            dragging = true;
+            activePointerId = e.pointerId;
+            startX = e.clientX;
+            startPanX = scenePanX;
+            track.classList.add("is-dragging");
+            thumb.setPointerCapture(e.pointerId);
+            e.preventDefault();
+            e.stopPropagation();
+        },
+        true
+    );
+
+    thumb.addEventListener("pointermove", (e) => {
+        if (!dragging || e.pointerId !== activePointerId) return;
+        const max = getScenePanMax();
+        const trackW = track.clientWidth;
+        const thumbW = thumb.offsetWidth;
+        const travel = Math.max(1, trackW - thumbW);
+        const dx = e.clientX - startX;
+        setScenePanX(startPanX - (dx / travel) * max);
+        e.preventDefault();
+    });
+
+    const endDrag = (e) => {
+        if (!dragging || e.pointerId !== activePointerId) return;
+        dragging = false;
+        activePointerId = null;
+        track.classList.remove("is-dragging");
+    };
+
+    thumb.addEventListener("pointerup", endDrag);
+    thumb.addEventListener("pointercancel", endDrag);
+
+    track.addEventListener(
+        "pointerdown",
+        (e) => {
+            if (!canPanScrollThumb() || e.target === thumb) return;
+            const max = getScenePanMax();
+            const rect = track.getBoundingClientRect();
+            const thumbW = thumb.offsetWidth;
+            const travel = Math.max(1, rect.width - thumbW);
+            const x = e.clientX - rect.left - thumbW / 2;
+            const ratio = clamp(x / travel, 0, 1);
+            setScenePanX(-ratio * max);
+            e.preventDefault();
+            e.stopPropagation();
+        },
+        true
+    );
+
+    window.addEventListener("resize", updatePanScrollThumb);
 }
 
 function showPanHintArrow() {
@@ -5827,7 +5999,7 @@ function updatePanHintArrowForPan() {
 function isScenePanTarget(target) {
     if (!(target instanceof Element)) return false;
     return !target.closest(
-        ".letter-card-text-host, .music-bar, .playlist-embed, [data-music-toggle], [data-music-track], [data-music-scrubber], .memory-card-caption-input, button, a, input, textarea, select, label"
+        ".letter-card-text-host, .music-bar, .playlist-embed, .pan-scroll-track, .pan-scroll-thumb, [data-music-toggle], [data-music-track], [data-music-scrubber], .memory-card-caption-input, button, a, input, textarea, select, label"
     );
 }
 
@@ -5852,6 +6024,7 @@ function enableSecretPanAccess() {
     document.querySelectorAll("[data-music-secret-pan]").forEach((el) => {
         el.style.pointerEvents = "none";
     });
+    enablePanScrollThumb();
 }
 
 function isMusicSecretPanTarget(target) {
@@ -5894,6 +6067,12 @@ function setupSceneHorizontalPan() {
     document.addEventListener(
         "pointerdown",
         (e) => {
+            if (
+                e.target instanceof Element &&
+                e.target.closest(".pan-scroll-track, .pan-scroll-thumb")
+            ) {
+                return;
+            }
             if (!canScenePan()) return;
             if (e.button !== 0 || !isScenePanTarget(e.target)) return;
 
@@ -5904,7 +6083,7 @@ function setupSceneHorizontalPan() {
             startPanX = scenePanX;
             document.body.setPointerCapture(e.pointerId);
         },
-        { passive: true }
+        { passive: true, capture: true }
     );
 
     document.addEventListener(
@@ -6854,8 +7033,8 @@ async function initMusicBar() {
 
             if (
                 e.button === 0 &&
-                !canScenePan() &&
-                isMusicSecretPanTarget(e.target)
+                isMusicSecretPanTarget(e.target) &&
+                (!canScenePan() || document.body.dataset.panScrollUnlock !== "1")
             ) {
                 e.preventDefault();
                 secretPanTapCount += 1;
@@ -6863,7 +7042,11 @@ async function initMusicBar() {
 
                 if (secretPanTapCount >= 3) {
                     secretPanTapCount = 0;
-                    enableSecretPanAccess();
+                    if (canScenePan()) {
+                        enablePanScrollThumb();
+                    } else {
+                        enableSecretPanAccess();
+                    }
                     return;
                 }
 
@@ -6924,6 +7107,7 @@ async function initMusicBar() {
 }
 
 void initMusicBar();
+setupPanScrollThumb();
 
 </script>
 
