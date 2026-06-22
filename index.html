@@ -175,11 +175,7 @@ body.scene-pannable .love-letter-stage{
     color:rgba(255, 245, 252, 0.94);
     line-height:1.55;
     text-align:center;
-    text-shadow:
-        0 0 12px rgba(255, 210, 245, 0.95),
-        0 0 28px rgba(255, 160, 225, 0.72),
-        0 0 48px rgba(255, 120, 210, 0.52),
-        0 0 72px rgba(255, 80, 195, 0.35);
+    text-shadow:none;
 }
 
 .letter-card-copy p{
@@ -211,9 +207,8 @@ body.scene-pannable .love-letter-stage{
     line-height:1;
     color:rgba(255, 228, 248, 0.98);
     text-shadow:
-        0 0 12px rgba(255, 210, 245, 0.95),
-        0 0 28px rgba(255, 160, 225, 0.72),
-        0 0 48px rgba(255, 120, 210, 0.52);
+        0 0 8px rgba(255, 200, 240, 0.42),
+        0 0 18px rgba(255, 140, 220, 0.22);
     opacity:0;
     transform:translateY(10px) scale(0.94);
     transition:
@@ -238,15 +233,13 @@ body.scene-pannable .love-letter-stage{
 .letter-tap-hint{
     margin-top:2.35em;
     font-weight:700;
-    -webkit-text-stroke:0.28px rgba(255, 228, 248, 0.5);
+    -webkit-text-stroke:0.18px rgba(255, 228, 248, 0.32);
 }
 
-.letter-tap-hint .letter-char{
+.letter-tap-hint .letter-word{
     text-shadow:
-        0 0 14px rgba(255, 210, 245, 0.98),
-        0 0 32px rgba(255, 160, 225, 0.82),
-        0 0 56px rgba(255, 120, 210, 0.62),
-        0 0 80px rgba(255, 80, 195, 0.42);
+        0 0 8px rgba(255, 200, 240, 0.5),
+        0 0 16px rgba(255, 140, 220, 0.28);
 }
 
 .pan-hint-arrow{
@@ -290,16 +283,11 @@ body.scene-pannable .love-letter-stage{
 .letter-word{
     display:inline-block;
     white-space:nowrap;
-}
-
-.letter-char{
     opacity:0;
-    animation:letter-in 0.18s ease-out forwards;
+    animation:letter-in 0.14s ease-out forwards;
     text-shadow:
-        0 0 12px rgba(255, 210, 245, 0.95),
-        0 0 28px rgba(255, 160, 225, 0.72),
-        0 0 48px rgba(255, 120, 210, 0.52),
-        0 0 72px rgba(255, 80, 195, 0.35);
+        0 0 6px rgba(255, 200, 240, 0.38),
+        0 0 14px rgba(255, 140, 220, 0.2);
 }
 
 .letter-space{
@@ -457,7 +445,7 @@ body.scene-pannable .love-letter-stage{
 
 .love-heart-wrap{
     transform-box:view-box;
-    transform-origin:131px 138px;
+    transform-origin:130.5px 139px;
     transition:
         transform 1.05s cubic-bezier(0.33, 1.12, 0.64, 1),
         filter 1.05s ease,
@@ -1587,8 +1575,8 @@ body.scene-pannable .love-letter-stage{
             ></iframe>
             <iframe
                 class="playlist-embed"
-                title="Sedetik Lebih"
-                src="https://open.spotify.com/embed/track/0wU81ztD9Phud7dVlJXvcx?utm_source=generator"
+                title="You Rock My World"
+                src="https://open.spotify.com/embed/track/1Lhwn4PqeGpM4LTVUowW76?utm_source=generator"
                 width="300"
                 height="152"
                 frameborder="0"
@@ -1741,8 +1729,8 @@ body.scene-pannable .love-letter-stage{
             ></iframe>
             <iframe
                 class="playlist-embed"
-                title="You Rock My World"
-                src="https://open.spotify.com/embed/track/1Lhwn4PqeGpM4LTVUowW76?utm_source=generator"
+                title="Sedetik Lebih"
+                src="https://open.spotify.com/embed/track/0wU81ztD9Phud7dVlJXvcx?utm_source=generator"
                 width="300"
                 height="152"
                 frameborder="0"
@@ -5450,6 +5438,13 @@ async function mountLoveLetter() {
         stampImage.setAttributeNS("http://www.w3.org/1999/xlink", "href", stampUrl);
     }
 
+    const loveStickerUrl = new URL("images/UI/lovesticker.png", window.location.href).href;
+    const loveHeartImage = svg.querySelector(".love-heart");
+    if (loveHeartImage) {
+        loveHeartImage.setAttribute("href", loveStickerUrl);
+        loveHeartImage.setAttributeNS("http://www.w3.org/1999/xlink", "href", loveStickerUrl);
+    }
+
     stage.appendChild(svg);
     ensureLetterCardGlassHost(stage);
     setupLoveLetterClick(stage);
@@ -5477,10 +5472,17 @@ function ensureLetterCardTextHost(stage) {
     host.className = "letter-card-text-host";
     host.innerHTML = `<article class="letter-card-copy" id="letterCopy">
 <p>Exactly a month ago, on a Saturday afternoon, we were bantering in your car after our bowling session when I asked you to be my girlfriend.</p>
-<p>I still remember vividly the times when I sat in the Lexus before the big day, ruminating about how I was going to ask you. I kept wondering what to say, when to say it, and how to say it. I quoted, "Ya Allah, I am so in love with this one girl, I don't want to leave her in a situationship that might leave her feelings in the dust." Scared that I might ask it wrong, I rehearsed my lines over and over, trying my best to prepare the perfect way to ask you out. Could you imagine I even added a few bunga kata to make it sound more polished? (Yes I did)</p>
-<p>When the moment finally came, I'll admit, my nervousness got the better of me (the excessive sweating didn't help at all). After all that preparation, I ended up asking one of the most direct questions in history;</p>
+<p>I still remember vividly the times I sat in the Lexus before the big day, ruminating over how I was going to ask you. I kept wondering what to say, when to say it, and how to say it. I remember whispering to myself, "Ya Allah, I am so in love with this one girl, I don't want to leave her in a situationship that might leave her feelings in the dust." Scared that I might mess it up, I rehearsed my lines over and over, trying my best to figure out a perfect way to ask you out. Can you imagine? I even added a few bunga kata to make it sound more polished. (Yes, I really did)</p>
+<p>When the moment finally came, I'll admit, my nervousness got the better of me. (The excessive sweating did not help at all) After all that preparation, I ended up asking one of the most direct questions in history:</p>
 <p>"Will you be my girlfriend?"</p>
-<p>After a while of witnessing you drown in extreme blush while swatting me with your rose plushie, you leaned in, hugged my left arm, and whispered something that made me the happiest man alive, it was a yes. I hope you know that was one of my most precious moments with you, my Princess Teha, on 23rd May 2026. If you're reading this, happy 1st monthsary, my love.</p>
+<p>After a while of watching you drown in an extreme blush while swatting me with your rose plushie, you leaned in, hugged my left arm, and whispered something that made me the happiest man alive. It was a yes. I hope you know that was one of my most precious moments with you, my princess.</p>
+<p>Sayang, I hope you know that ever since that day, there hasn't been a single morning I've woken up without a smile tugging at my lips knowing I have someone at the corner of my heart loving me (as well as planning to ask me whether I still love her or not) To some, that might sound silly, but to me, that phrase alone carries the essence of your physical presence enough to heal a part of me without even trying. That shows just how much of an impact you've made in my life.</p>
+<p>Every I love you, every I miss you we've exchanged, every laugh we've shared, every moment we've spent together; (look at me using ; here) all of it makes me so grateful to be with you. Reflecting back on 23rd May 2026, choosing you is the best decision I have ever made in my life.</p>
+<p>We may have our mistakes and flaws that lead us to disagreements, but that is what connects us, not a measure of whether I'm happy or if I love you any less. How we make up to it will be the judge of such. (Yes, before you ask I'm very happy to be with you my sayang)</p>
+<p>If you're reading this, happy 1st monthsary, my love. I pray that may our relationship progress further until people look at us and say "wow they're married now".</p>
+<p>When at some point in life where no one cares for you, know this: as long as I live, I will always love you. More than yesterday, less than tomorrow. (Not by 10 or 11 better yet 6.7)</p>
+<p>Anyway, I recalled that my precious girlfriend loves flowers as a gift. So, as a token of gratitude for having you in my life, I built this interactive website (with a garden!) just for you.</p>
+<p>Wanna see it?</p>
 </article>`;
 
     stage.appendChild(host);
@@ -5641,9 +5643,9 @@ function updateLetterCardFades(scroller) {
 }
 
 function animateLetterText(container, paragraphSources) {
-    let delay = 0.08;
-    const step = 0.017;
-    const paragraphPause = 0.22;
+    let delay = 0.06;
+    const step = 0.1;
+    const paragraphPause = 0.14;
     const paragraphs = Array.from(container.querySelectorAll("p"));
 
     return paragraphs.reduce((chain, p, paragraphIndex) => {
@@ -5656,23 +5658,14 @@ function animateLetterText(container, paragraphSources) {
                         if (index > 0) {
                             const space = document.createElement("span");
                             space.className = "letter-space";
-                            space.style.animationDelay = `${delay}s`;
-                            delay += step;
                             p.appendChild(space);
                         }
 
                         const wordWrap = document.createElement("span");
                         wordWrap.className = "letter-word";
-
-                        for (const char of word) {
-                            const span = document.createElement("span");
-                            span.className = "letter-char";
-                            span.textContent = char;
-                            span.style.animationDelay = `${delay}s`;
-                            delay += step;
-                            wordWrap.appendChild(span);
-                        }
-
+                        wordWrap.textContent = word;
+                        wordWrap.style.animationDelay = `${delay}s`;
+                        delay += step;
                         p.appendChild(wordWrap);
                     });
 
@@ -5690,8 +5683,8 @@ function animateLetterText(container, paragraphSources) {
 }
 
 function animateSingleLetterParagraph(p, text) {
-    let delay = 0.08;
-    const step = 0.017;
+    let delay = 0.06;
+    const step = 0.1;
 
     return new Promise((resolve) => {
         const words = text.split(/\s+/).filter(Boolean);
@@ -5700,23 +5693,14 @@ function animateSingleLetterParagraph(p, text) {
             if (index > 0) {
                 const space = document.createElement("span");
                 space.className = "letter-space";
-                space.style.animationDelay = `${delay}s`;
-                delay += step;
                 p.appendChild(space);
             }
 
             const wordWrap = document.createElement("span");
             wordWrap.className = "letter-word";
-
-            for (const char of word) {
-                const span = document.createElement("span");
-                span.className = "letter-char";
-                span.textContent = char;
-                span.style.animationDelay = `${delay}s`;
-                delay += step;
-                wordWrap.appendChild(span);
-            }
-
+            wordWrap.textContent = word;
+            wordWrap.style.animationDelay = `${delay}s`;
+            delay += step;
             p.appendChild(wordWrap);
         });
 
@@ -6152,6 +6136,11 @@ function revealTapAroundHint(host, copy) {
         hint,
         "TAP AROUND THE SCREEN SAYANG"
     ).then(() => {
+        if (host.scrollTo) {
+            host.scrollTo({ top: host.scrollHeight, behavior: "smooth" });
+        } else {
+            host.scrollTop = host.scrollHeight;
+        }
         updateLetterCardFades(host);
         enableGardenInteraction();
     });
